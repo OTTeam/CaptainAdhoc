@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     btconnect = new QPushButton("Connect",this);
     sendHello = new QPushButton("Hello!",this);
     progressBar = new QProgressBar(this);
-    progressBar->setRange(0,100);
+    progressBar->setMinimum(0);
+    progressBar->setMaximum(100);
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
     connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));

@@ -21,7 +21,7 @@ void GestionClients::clientReceived(int percentComplete)
 
 void GestionClients::newConnectionRequest(QString address)
 {
-    QMessageBox::information(0,"connexion à" ,address,QMessageBox::Ok);
+
     bool clientExists = false;
     foreach (Client *client, clients)
     {
@@ -34,7 +34,6 @@ void GestionClients::newConnectionRequest(QString address)
 
     if (clientExists == false)
     {
-        QMessageBox::information(0,"NewConnexionREquest" ,"Ajout d'un nouveau client",QMessageBox::Ok);
         Client *client = new Client(address);
         clients.push_back(client);
         connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
@@ -45,6 +44,7 @@ void GestionClients::newConnectionDone(QTcpSocket *socket)
 {
     Client *client = new Client(socket);
     connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
+    QMessageBox::information(0,"NewConnexionREquest" ,"Connexion d'un nouveau client",QMessageBox::Ok);
     clients.push_back(client);
 }
 

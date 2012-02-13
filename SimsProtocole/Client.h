@@ -28,17 +28,21 @@ signals:
 private slots:
 
     void donneesRecues();
+    void donneesEcrites(qint64);
     void deconnexionSocket();
     void connexion();
 
 private:
     QTcpSocket *socket;
     quint16 messageLength;
+
     QString currentFile;
     quint64 bytesReceived;
     quint64 filesize;
-    QFile *fichier;
+    QFile *fichierRecv;
+    QFile *fichierSend;
 
+    ETAT_CLIENT etat;
 
 };
 

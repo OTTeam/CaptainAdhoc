@@ -26,4 +26,6 @@ struct RemoteFiles
 
 enum TYPE_PAQUET { FILE_REQUEST_INIT, FILE_REQUEST, LIST_REQUEST };
 
+
+enum ETAT_CLIENT { IDLE, SENDING};
 #endif // UTILS_H

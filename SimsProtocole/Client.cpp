@@ -12,7 +12,9 @@ Client::Client(QTcpSocket *s)
     connect(socket,SIGNAL(readyRead()),this, SLOT(donneesRecues()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
     connect(socket,SIGNAL(connected()),this,SLOT(connexion()));
+    connect(socket,SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
     messageLength = 0;
+    etat = IDLE;
 }
 
 
@@ -22,11 +24,12 @@ Client::Client(QString address)
     connect(socket,SIGNAL(readyRead()),this, SLOT(donneesRecues()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
     connect(socket,SIGNAL(connected()),this,SLOT(connexion()));
+    connect(socket,SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
     messageLength = 0;
 
     socket->connectToHost(address,PORT_SERVEUR);
 
-
+    etat = IDLE;
 }
 
 Client::~Client()
@@ -68,9 +71,11 @@ void Client::donneesRecues()
 
                    //QMessageBox::information(0,"receiving", path);
 
-                   fichier = new QFile(path);
-                   fichier->open(QIODevice::WriteOnly | QIODevice::Truncate);
+                   fichierRecv = new QFile(path);
+                   fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
+
                    bytesReceived = 0;
+
 
            }
            else if (type == FILE_REQUEST)
@@ -78,14 +83,14 @@ void Client::donneesRecues()
                QByteArray data;
                in >> data;
                bytesReceived += data.length();
-               fichier->write(data);
+               fichierRecv->write(data);
                emit NewData(bytesReceived/filesize*100);
               // QMessageBox::information(0,"receiving Data", QString::number(data.length()));
                if (bytesReceived == filesize)
                {
                    bytesReceived = 0;
-                   fichier->close();
-                   delete fichier;
+                   fichierRecv->close();
+                   delete fichierRecv;
 
                }
            }
@@ -128,17 +133,18 @@ void Client::sendMessage(QString message)
 
      QString filePath = QFileDialog::getOpenFileName(0,"SElectionnez le fichier à envoyer");
 
+     fichierSend = new QFile(filePath);
+     fichierSend->open(QIODevice::ReadOnly);
 
-     QFile fichierAEnvoyer(filePath);
-     fichierAEnvoyer.open(QIODevice::ReadOnly);
+    etat = SENDING;
 
     QFileInfo fileInfo(filePath);
-     QString filename = fileInfo.fileName();
+    QString filename = fileInfo.fileName();
 
      out << (quint16) 0;    // taillePaquet
      out << type;           // typePaquet
      out << filename;       // NomFichier
-     out << (quint64) fichierAEnvoyer.size(); //TailleFichier
+     out << (quint64) fileInfo.size(); //TailleFichier
 
      out.device()->seek(0);
      out << (quint16) (paquet.size() - sizeof(quint16));
@@ -147,40 +153,46 @@ void Client::sendMessage(QString message)
      socket->write(paquet); // On envoie le paquet
 
 
-     int sentData = 0;
-     int filesize = fichierAEnvoyer.size();
-     QByteArray data;
-     type = FILE_REQUEST;
-     paquet.clear();
-     out.device()->reset();
-     data = fichierAEnvoyer.read(5000);
-     while (data.length() > 0)
-     {
-         out << (quint16) 0;
-         out << type;
-         out << data;
 
-         /*QString msgText = "Envoi de : " + QString::number(data.length());
-         QMessageBox::information(0,"sendingData", msgText);*/
 
-         out.device()->seek(0);
-         out << (quint16) (paquet.size() - sizeof(quint16));
-
-         socket->write(paquet);
-         sentData +=data.size();
-
-         emit NewData(sentData/filesize*100);
-         paquet.clear();
-         out.device()->reset();
-         data = fichierAEnvoyer.read(5000);
-
-     }
 }
 
+
+void Client::donneesEcrites(qint64 bytes)
+{
+    static int sentData = 0;
+    int filesize = fichierSend->size();
+
+    quint16 type = FILE_REQUEST;
+    QByteArray paquet;
+    QDataStream out(&paquet, QIODevice::WriteOnly);
+
+    QByteArray data = fichierSend->read(5000);
+    if (data.length() > 0)
+    {
+        out << (quint16) 0;
+        out << type;
+        out << data;
+
+        out.device()->seek(0);
+        out << (quint16) (paquet.size() - sizeof(quint16));
+
+        socket->write(paquet);
+        sentData +=data.size();
+
+        emit NewData(sentData/filesize*100);
+    } else
+    {
+        fichierSend->close();
+        delete fichierSend;
+        sentData = 0;
+    }
+}
 
 void Client::deconnexionSocket()
 {
 
+    QMessageBox::information(0, "Client", "Deconnexion client",QMessageBox::Ok);
     emit disconnected();
 
 }
