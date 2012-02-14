@@ -15,8 +15,6 @@ void GestionClients::clientReceived(int percentComplete)
     //Client *clientSender = (Client *)sender();
     //QMessageBox::information(this,"progress",QString::number(Progress),QMessageBox::Ok);
     emit TransfertUpdate(percentComplete);
-
-
 }
 
 
@@ -67,10 +65,9 @@ void GestionClients::clientDisconnect()
 
 void GestionClients::sendToAll()
 {
-
     foreach (Client *client, clients)
     {
-        client->sendMessage(QString("Hello!"));
+        client->sendMessage();
     }
 
 

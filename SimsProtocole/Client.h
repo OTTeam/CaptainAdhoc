@@ -20,9 +20,16 @@ public:
     Client(QString address);
     ~Client();
     QString getAddress();
-    void sendMessage(QString message);
+    void sendMessage();
 private:
     void socketConfig();
+
+    void receivedFileRequest();     // demande de fichier de la part du client
+    void receivedFileRequestInit(); // réponse du serveur lors de la demande (confirmation nom, taille)
+    void receivedFileRequestAck();  // confirmation du client
+    void receivedFileData();        // réception d'un fichier par le client
+    void receivedFileList();
+
 signals:
     void NewData(int);
     void connected(Client *);
@@ -39,12 +46,12 @@ private:
     QTcpSocket *socket;
     quint16 messageLength;
 
-    //QString currentFile;
     quint64 bytesReceived;
-    quint64 bytesSent;
     quint64 filesize;
     QFile *fichierRecv;
+
     QFile *fichierSend;
+    quint64 bytesSent;
 
     ETAT_CLIENT etat;
 

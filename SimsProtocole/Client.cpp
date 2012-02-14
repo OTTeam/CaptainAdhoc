@@ -9,8 +9,7 @@
 Client::Client(QTcpSocket *s)
 {
     socket = s;
-    socketConfig();
-}
+    socketConfig();}
 
 
 Client::Client(QString address)
@@ -23,10 +22,10 @@ Client::Client(QString address)
 
 void Client::socketConfig()
 {
-    connect(socket, SIGNAL(connected()),this,SLOT(connexion()));
-    connect(socket, SIGNAL(readyRead()),this, SLOT(donneesRecues()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
-    connect(socket, SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
+    connect(socket, SIGNAL(connected()),         this, SLOT(connexion()));
+    connect(socket, SIGNAL(readyRead()),         this, SLOT(donneesRecues()));
+    connect(socket, SIGNAL(disconnected()),      this, SLOT(deconnexionSocket()));
+    connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(donneesEcrites(qint64)));
     messageLength = 0;
     etat = IDLE;
 }
@@ -38,12 +37,12 @@ Client::~Client()
     {
         fichierRecv->close();
         delete fichierRecv;
-     }
+    }
     if (fichierSend!= NULL && fichierSend->isOpen())
     {
         fichierSend->close();
         delete fichierSend;
-     }
+    }
 
     delete socket;
 }
@@ -62,112 +61,143 @@ Client::~Client()
 void Client::donneesRecues()
 {
     // Si tout va bien, on continue : on récupère le message
-       QDataStream in(socket);
+    QDataStream in(socket);
 
-       while (socket->bytesAvailable()>0)
-       {
-           if (messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
-           {
-               if (socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
-                    return;
+    while (socket->bytesAvailable()>0)
+    {
+        if (messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
+        {
+            if (socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
+                return;
 
-               in >> messageLength; // Si on a reçu la taille du message en entier, on la récupère
-           }
+            in >> messageLength; // Si on a reçu la taille du message en entier, on la récupère
+        }
 
-           // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
-           if (socket->bytesAvailable() < messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
-               return;
+        // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
+        if (socket->bytesAvailable() < messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+            return;
 
-           // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
-           quint16 type;
-           in >> type;
+        // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
+        quint16 type;
+        in >> type;
+        switch (type)
+        {
+        case FILE_REQUEST_INIT:
+            receivedFileRequestInit();
+            break;
+        case FILE_DATA:
+            receivedFileData();
+            break;
+        case FILE_REQUEST_ACK:
+            receivedFileRequestAck();
+            break;
+        case LIST_REQUEST:
+            receivedFileList();
+            break;
+        default:
+            break;
+        }
 
-           if (type == FILE_REQUEST_INIT)
-           {
-                   // ici on a juste envoyé le filename, on le récupère donc
-                   QString currentFile;
-
-                   in >> currentFile;
-                   in >> filesize;
-
-                   QString path = QFileDialog::getExistingDirectory(0,"Enregistrer le fichier sous...");
-                   //QString path = "C:\\";
-                   path += currentFile;
-
-                   QMessageBox::information(0,"receiving", path);
-
-                   fichierRecv = new QFile(path);
-                   fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
-
-                   bytesReceived = 0;
-
-                   QByteArray paquet;
-                   QDataStream out(&paquet, QIODevice::WriteOnly);
-
-                    // On prépare le paquet à envoyer
-                    quint16 type = FILE_REQUEST_ACK;
-                    out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
-                    out << type;           // typePaquet
-
-                    // mise à jour de taillePaquet
-                    out.device()->seek(0);
-                    out << (quint16) (paquet.size() - sizeof(quint16));
-
-                    socket->write(paquet); // On envoie le paquet
-           }
-           else if (type == FILE_REQUEST)
-           {
-               QByteArray data;
-               in >> data;
-               bytesReceived += data.length();
-               fichierRecv->write(data);
-               emit NewData(bytesReceived*100/filesize);
-              // QMessageBox::information(0,"receiving Data", QString::number(data.length()));
-               if (bytesReceived == filesize)
-               {
-                   bytesReceived = 0;
-                   fichierRecv->close();
-                   delete fichierRecv;
-
-               }
-           }
-           else if (type == FILE_REQUEST_ACK)
-           {
-               etat = SENDING_FILE;
-               donneesEcrites(0);
-           }
-           else if (type == LIST_REQUEST)
-           {
-                //demande d'annuaire
-
-
-           }
-
-
-           messageLength = 0;
+        messageLength = 0;
     }
 
 }
+
+
+
+void Client::receivedFileRequest()
+{
+
+}
+
+
+void Client::receivedFileRequestInit()
+{
+    QDataStream in(socket);
+    // ici on a juste envoyé le filename, on le récupère donc
+    QString fileRequested;
+
+    in >> fileRequested;
+    in >> filesize;
+
+    QString path = QFileDialog::getExistingDirectory(0,"Enregistrer le fichier sous...");
+    path += "\\" + fileRequested;
+
+    QMessageBox::information(0,"receiving", path);
+
+    fichierRecv = new QFile(path);
+    fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
+
+    bytesReceived = 0;
+
+
+    // on envoie alors le Ack pour confirmer au serveur l'envoi du fichier
+    QByteArray paquet;
+    QDataStream out(&paquet, QIODevice::WriteOnly);
+
+    // On prépare le paquet à envoyer
+    quint16 type = FILE_REQUEST_ACK;
+    out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
+    out << type;           // typePaquet
+
+    // mise à jour de taillePaquet
+    out.device()->seek(0);
+    out << (quint16) (paquet.size() - sizeof(quint16));
+
+    socket->write(paquet); // On envoie le paquet
+}
+
+
+void Client::receivedFileRequestAck()
+{
+    etat = SENDING_FILE;
+    donneesEcrites(0);
+}
+
+
+void Client::receivedFileData()
+{
+    QDataStream in(socket);
+    QByteArray data;
+    in >> data;
+    bytesReceived += data.length();
+    fichierRecv->write(data);
+    emit NewData(bytesReceived*100/filesize);
+
+    if (bytesReceived == filesize)
+    {
+        bytesReceived = 0;
+        fichierRecv->close();
+        delete fichierRecv;
+
+    }
+}
+
+void Client::receivedFileList()
+{
+
+}
+
 
 /*
  * Fonction d'envoi de message, on lui passe en paramètre le fichier à envoyer et elle se charge de
  * le découper et de le passer par la socket. (envoi au préalable d'un message : FILE_REQUEST_INIT pour
  * annoncer la venue du fichier
 */
-void Client::sendMessage(QString message)
+void Client::sendMessage()
 {
     QByteArray paquet;
     QDataStream out(&paquet, QIODevice::WriteOnly);
 
-     // On prépare le paquet à envoyer
-     quint16 type = FILE_REQUEST_INIT;
+    // On prépare le paquet à envoyer
+    quint16 type = FILE_REQUEST_INIT;
 
-     // le fichier à envoyer, uniquement à des fins de test
-     QString filePath = QFileDialog::getOpenFileName(0,"Sélectionnez le fichier à envoyer");
+    // le fichier à envoyer, uniquement à des fins de test
+    QString filePath = QFileDialog::getOpenFileName(0,"Sélectionnez le fichier à envoyer");
 
-     // ouverture du fichier
-     fichierSend = new QFile(filePath);
-     fichierSend->open(QIODevice::ReadOnly);
+    // ouverture du fichier
+    fichierSend = new QFile(filePath);
+    fichierSend->open(QIODevice::ReadOnly);
     // changement d'état pour pouvoir envoyer la suite lors de l'appel au slot "donneesEcrites"
     etat = WAITING_ACK;
     bytesSent=0;
@@ -175,19 +205,19 @@ void Client::sendMessage(QString message)
     QFileInfo fileInfo(filePath);
     QString SendFilename = fileInfo.fileName();
     quint64 SendFilesize = fileInfo.size();
-     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
-     out << type;           // typePaquet
-     out << SendFilename;   // NomFichier
-     out << SendFilesize;   //TailleFichier
+    out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
+    out << type;           // typePaquet
+    out << SendFilename;   // NomFichier
+    out << SendFilesize;   //TailleFichier
 
 
-     // mise à jour de taillePaquet
-     out.device()->seek(0);
-     out << (quint16) (paquet.size() - sizeof(quint16));
+    // mise à jour de taillePaquet
+    out.device()->seek(0);
+    out << (quint16) (paquet.size() - sizeof(quint16));
 
 
-     QMessageBox::information(0,"sending", SendFilename);
-     socket->write(paquet); // On envoie le paquet
+    QMessageBox::information(0,"sending", SendFilename);
+    socket->write(paquet); // On envoie le paquet
 
 }
 
@@ -202,7 +232,7 @@ void Client::donneesEcrites(qint64 bytes)
         QFileInfo fileInfo(fichierSend->fileName());
 
         int filesize = fileInfo.size();
-        quint16 type = FILE_REQUEST;
+        quint16 type = FILE_DATA;
         QByteArray paquet;
         QDataStream out(&paquet, QIODevice::WriteOnly);
 
@@ -230,15 +260,17 @@ void Client::donneesEcrites(qint64 bytes)
     }
 }
 
+
 void Client::deconnexionSocket()
 {
-     emit disconnected();
+    emit disconnected();
 }
 
- void Client::connexion()
- {
-     emit connected(this);
- }
+
+void Client::connexion()
+{
+    emit connected(this);
+}
 
 
 QString Client::getAddress()
