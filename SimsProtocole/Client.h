@@ -21,8 +21,11 @@ public:
     ~Client();
     QString getAddress();
     void sendMessage(QString message);
+private:
+    void socketConfig();
 signals:
     void NewData(int);
+    void connected(Client *);
     void disconnected();
 
 private slots:
@@ -38,6 +41,7 @@ private:
 
     QString currentFile;
     quint64 bytesReceived;
+    quint64 bytesSent;
     quint64 filesize;
     QFile *fichierRecv;
     QFile *fichierSend;

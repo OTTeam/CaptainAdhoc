@@ -9,34 +9,57 @@
 Client::Client(QTcpSocket *s)
 {
     socket = s;
-    connect(socket,SIGNAL(readyRead()),this, SLOT(donneesRecues()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
-    connect(socket,SIGNAL(connected()),this,SLOT(connexion()));
-    connect(socket,SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
-    messageLength = 0;
-    etat = IDLE;
+    socketConfig();
 }
 
 
 Client::Client(QString address)
 {
     socket = new QTcpSocket(this);
-    connect(socket,SIGNAL(readyRead()),this, SLOT(donneesRecues()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
-    connect(socket,SIGNAL(connected()),this,SLOT(connexion()));
-    connect(socket,SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
-    messageLength = 0;
-
+    socketConfig();
     socket->connectToHost(address,PORT_SERVEUR);
+    socketConfig();
+}
 
+
+void Client::socketConfig()
+{
+    connect(socket, SIGNAL(connected()),this,SLOT(connexion()));
+    connect(socket, SIGNAL(readyRead()),this, SLOT(donneesRecues()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(deconnexionSocket()));
+    connect(socket, SIGNAL(bytesWritten(qint64)),this,SLOT(donneesEcrites(qint64)));
+    messageLength = 0;
     etat = IDLE;
 }
 
+
 Client::~Client()
 {
+    if (fichierRecv != NULL && fichierRecv->isOpen())
+    {
+        fichierRecv->close();
+        delete fichierRecv;
+     }
+    if (fichierSend!= NULL && fichierSend->isOpen())
+    {
+        fichierSend->close();
+        delete fichierSend;
+     }
+
     delete socket;
 }
 
+/*
+ * Slot appelé à chaque fois que la socket reçoit des données.
+ * Première étape : vérifier le nombre d'octets devant être lus.
+ * Si on le connait déjà et que tout est arrivé, on lit le message
+ *
+ * Un message commence par un type (FILE_REQUEST_INIT, FILE_REQUEST, LIST_REQUEST)
+ * FILE_REQUEST_INIT : 2 données : nom du fichier à recevoir, taille
+ * FILE_REQUEST      : le fichier à recevoir (découpé), data brut.
+ * LIST_REQUEST      : anuaire de fichiers disponibles : sous la forme nomFic1, taille1, nomFic2, Taille2....
+ *
+*/
 void Client::donneesRecues()
 {
     // Si tout va bien, on continue : on récupère le message
@@ -84,7 +107,7 @@ void Client::donneesRecues()
                in >> data;
                bytesReceived += data.length();
                fichierRecv->write(data);
-               emit NewData(bytesReceived/filesize*100);
+               emit NewData(bytesReceived*100/filesize);
               // QMessageBox::information(0,"receiving Data", QString::number(data.length()));
                if (bytesReceived == filesize)
                {
@@ -100,106 +123,102 @@ void Client::donneesRecues()
 
 
            }
-           /*QString DataReceived;
-           QString DataReceived2;
-           in >> DataReceived;
-           in >> DataReceived2;
 
-           QMessageBox::information(0,"received1", DataReceived,QMessageBox::Ok);
-           QMessageBox::information(0,"received2", DataReceived2,QMessageBox::Ok);
-
-
-
-           emit NewData(DataReceived);*/
 
            messageLength = 0;
     }
 
 }
 
-
+/*
+ * Fonction d'envoi de message, on lui passe en paramètre le fichier à envoyer et elle se charge de
+ * le découper et de le passer par la socket. (envoi au préalable d'un message : FILE_REQUEST_INIT pour
+ * annoncer la venue du fichier
+*/
 void Client::sendMessage(QString message)
 {
     QByteArray paquet;
     QDataStream out(&paquet, QIODevice::WriteOnly);
 
      // On prépare le paquet à envoyer
-
-    // plusieurs types de paquets : demande de DL, demande d'annuaire
-    // demande de DL sous la forme : TYPE_PAQUET | sizeFilename | filename
-    // demande d'annuaire sous la forme : TYPE_PAQUET
-
      quint16 type = FILE_REQUEST_INIT;
 
-     QString filePath = QFileDialog::getOpenFileName(0,"SElectionnez le fichier à envoyer");
+     // le fichier à envoyer, uniquement à des fins de test
+     QString filePath = QFileDialog::getOpenFileName(0,"Sélectionnez le fichier à envoyer");
 
+     // ouverture du fichier
      fichierSend = new QFile(filePath);
      fichierSend->open(QIODevice::ReadOnly);
-
+    // changement d'état pour pouvoir envoyer la suite lors de l'appel au slot "donneesEcrites"
     etat = SENDING;
+    bytesSent=0;
 
     QFileInfo fileInfo(filePath);
-    QString filename = fileInfo.fileName();
-
-     out << (quint16) 0;    // taillePaquet
+    QString SendFilename = fileInfo.fileName();
+    quint64 SendFilesize = fileInfo.size();
+     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
      out << type;           // typePaquet
-     out << filename;       // NomFichier
-     out << (quint64) fileInfo.size(); //TailleFichier
+     out << SendFilename;   // NomFichier
+     out << SendFilesize;   //TailleFichier
 
+
+     // mise à jour de taillePaquet
      out.device()->seek(0);
      out << (quint16) (paquet.size() - sizeof(quint16));
 
-     QMessageBox::information(0,"sending", filename);
+
+     QMessageBox::information(0,"sending", SendFilename);
      socket->write(paquet); // On envoie le paquet
-
-
-
 
 }
 
-
+/*
+ * Slot appelé à chaque écriture de données sur la socket, permet de ne pas être bloquant sur le socket->write()
+ * si le buffer est plein.
+ */
 void Client::donneesEcrites(qint64 bytes)
 {
-    static int sentData = 0;
-    int filesize = fichierSend->size();
-
-    quint16 type = FILE_REQUEST;
-    QByteArray paquet;
-    QDataStream out(&paquet, QIODevice::WriteOnly);
-
-    QByteArray data = fichierSend->read(5000);
-    if (data.length() > 0)
+    if (etat == SENDING)
     {
-        out << (quint16) 0;
-        out << type;
-        out << data;
+        QFileInfo fileInfo(fichierSend->fileName());
 
-        out.device()->seek(0);
-        out << (quint16) (paquet.size() - sizeof(quint16));
+        int filesize = fileInfo.size();
+        quint16 type = FILE_REQUEST;
+        QByteArray paquet;
+        QDataStream out(&paquet, QIODevice::WriteOnly);
 
-        socket->write(paquet);
-        sentData +=data.size();
+        QByteArray data = fichierSend->read(5000);
+        bytesSent += data.size();
+        emit NewData(bytesSent*100/filesize);
+        if (data.length() > 0)
+        {
+            out << (quint16) 0;
+            out << type;
+            out << data;
 
-        emit NewData(sentData/filesize*100);
-    } else
-    {
-        fichierSend->close();
-        delete fichierSend;
-        sentData = 0;
+            out.device()->seek(0);
+            out << (quint16) (paquet.size() - sizeof(quint16));
+
+            socket->write(paquet);
+
+        } else
+        {
+            fichierSend->close();
+            delete fichierSend;
+            bytesSent = 0;
+            etat = IDLE;
+        }
     }
 }
 
 void Client::deconnexionSocket()
 {
-
-    QMessageBox::information(0, "Client", "Deconnexion client",QMessageBox::Ok);
-    emit disconnected();
-
+     emit disconnected();
 }
 
  void Client::connexion()
  {
-     QMessageBox::information(0, "Client", "Connexion réussie",QMessageBox::Ok);
+     emit connected(this);
  }
 
 

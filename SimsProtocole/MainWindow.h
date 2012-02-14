@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QProgressBar>
+#include <QLabel>
 
 #include "GestionClients.h"
 
@@ -21,11 +22,14 @@ signals:
 private slots:
     void ConnectClicked();
     void HelloClicked();
+    void UpdateClientsNumber(int);
+    void UpdateProgress(int);
 private:
     QLineEdit *address;
     QPushButton *btconnect;
     QPushButton *sendHello;
     QProgressBar *progressBar;
+    QLabel *lbNbClients;
 
     GestionClients *gestionnaire;
 };

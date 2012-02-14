@@ -12,7 +12,8 @@ GestionClients::GestionClients(QObject *parent) :
 
 void GestionClients::clientReceived(int percentComplete)
 {
-    Client *clientSender = (Client *)sender();
+    //Client *clientSender = (Client *)sender();
+    //QMessageBox::information(this,"progress",QString::number(Progress),QMessageBox::Ok);
     emit TransfertUpdate(percentComplete);
 
 
@@ -35,17 +36,25 @@ void GestionClients::newConnectionRequest(QString address)
     if (clientExists == false)
     {
         Client *client = new Client(address);
-        clients.push_back(client);
-        connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
+        connect(client, SIGNAL(connected(Client *)), this, SLOT(clientConnected(Client *)));
     }
-
 }
+
+
 void GestionClients::newConnectionDone(QTcpSocket *socket)
 {
     Client *client = new Client(socket);
+    clientConnected(client);
+    connect(client, SIGNAL(connected(Client *)),this,SLOT(clientConnected(Client *)));
+}
+
+
+void GestionClients::clientConnected(Client *client)
+{
     connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
-    QMessageBox::information(0,"NewConnexionREquest" ,"Connexion d'un nouveau client",QMessageBox::Ok);
+    connect(client,SIGNAL(disconnected()),this,SLOT(clientDisconnect()));
     clients.push_back(client);
+    emit ClientNumberChanged(clients.size());
 }
 
 
@@ -53,6 +62,7 @@ void GestionClients::clientDisconnect()
 {
     Client *client = (Client *)sender();
     clients.removeOne(client);
+    emit ClientNumberChanged(clients.size());
 }
 
 void GestionClients::sendToAll()

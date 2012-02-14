@@ -19,11 +19,13 @@ public:
     
 signals:
     void TransfertUpdate(int);
+    void ClientNumberChanged(int);
 private slots:
     void clientReceived(int);
     void newConnectionRequest(QString);
     void newConnectionDone(QTcpSocket *);
     void clientDisconnect();
+    void clientConnected(Client *);
 
 private:
     QList<Client*> clients;
