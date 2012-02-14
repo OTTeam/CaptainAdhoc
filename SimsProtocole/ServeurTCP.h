@@ -16,7 +16,6 @@ public:
 signals:
    void AjouterClient(QTcpSocket *);
 
-
 private slots:
     void nouvelleConnexion();
 

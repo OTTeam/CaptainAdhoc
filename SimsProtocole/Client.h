@@ -39,7 +39,7 @@ private:
     QTcpSocket *socket;
     quint16 messageLength;
 
-    QString currentFile;
+    //QString currentFile;
     quint64 bytesReceived;
     quint64 bytesSent;
     quint64 filesize;

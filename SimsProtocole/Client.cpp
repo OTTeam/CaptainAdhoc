@@ -18,7 +18,6 @@ Client::Client(QString address)
     socket = new QTcpSocket(this);
     socketConfig();
     socket->connectToHost(address,PORT_SERVEUR);
-    socketConfig();
 }
 
 
@@ -86,20 +85,35 @@ void Client::donneesRecues()
            if (type == FILE_REQUEST_INIT)
            {
                    // ici on a juste envoyé le filename, on le récupère donc
+                   QString currentFile;
+
                    in >> currentFile;
                    in >> filesize;
 
-                   QString path = "C:\\";
+                   QString path = QFileDialog::getExistingDirectory(0,"Enregistrer le fichier sous...");
+                   //QString path = "C:\\";
                    path += currentFile;
 
-                   //QMessageBox::information(0,"receiving", path);
+                   QMessageBox::information(0,"receiving", path);
 
                    fichierRecv = new QFile(path);
                    fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
 
                    bytesReceived = 0;
 
+                   QByteArray paquet;
+                   QDataStream out(&paquet, QIODevice::WriteOnly);
 
+                    // On prépare le paquet à envoyer
+                    quint16 type = FILE_REQUEST_ACK;
+                    out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
+                    out << type;           // typePaquet
+
+                    // mise à jour de taillePaquet
+                    out.device()->seek(0);
+                    out << (quint16) (paquet.size() - sizeof(quint16));
+
+                    socket->write(paquet); // On envoie le paquet
            }
            else if (type == FILE_REQUEST)
            {
@@ -116,6 +130,11 @@ void Client::donneesRecues()
                    delete fichierRecv;
 
                }
+           }
+           else if (type == FILE_REQUEST_ACK)
+           {
+               etat = SENDING_FILE;
+               donneesEcrites(0);
            }
            else if (type == LIST_REQUEST)
            {
@@ -150,7 +169,7 @@ void Client::sendMessage(QString message)
      fichierSend = new QFile(filePath);
      fichierSend->open(QIODevice::ReadOnly);
     // changement d'état pour pouvoir envoyer la suite lors de l'appel au slot "donneesEcrites"
-    etat = SENDING;
+    etat = WAITING_ACK;
     bytesSent=0;
 
     QFileInfo fileInfo(filePath);
@@ -178,7 +197,7 @@ void Client::sendMessage(QString message)
  */
 void Client::donneesEcrites(qint64 bytes)
 {
-    if (etat == SENDING)
+    if (etat == SENDING_FILE)
     {
         QFileInfo fileInfo(fichierSend->fileName());
 
@@ -187,7 +206,7 @@ void Client::donneesEcrites(qint64 bytes)
         QByteArray paquet;
         QDataStream out(&paquet, QIODevice::WriteOnly);
 
-        QByteArray data = fichierSend->read(5000);
+        QByteArray data = fichierSend->read(BLOCK_SIZE);
         bytesSent += data.size();
         emit NewData(bytesSent*100/filesize);
         if (data.length() > 0)

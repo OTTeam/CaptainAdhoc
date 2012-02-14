@@ -7,7 +7,7 @@
 class Client;
 
 #define PORT_SERVEUR 50855
-
+#define BLOCK_SIZE 5000
 
 
 struct LocalFiles
@@ -24,8 +24,8 @@ struct RemoteFiles
     Client *client;
 };
 
-enum TYPE_PAQUET { FILE_REQUEST_INIT, FILE_REQUEST, LIST_REQUEST };
+enum TYPE_PAQUET { FILE_REQUEST_INIT, FILE_REQUEST, FILE_REQUEST_ACK, LIST_REQUEST };
 
 
-enum ETAT_CLIENT { IDLE, SENDING};
+enum ETAT_CLIENT { IDLE, SENDING_FILE, WAITING_ACK};
 #endif // UTILS_H

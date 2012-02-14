@@ -20,6 +20,7 @@ public:
 signals:
     void TransfertUpdate(int);
     void ClientNumberChanged(int);
+
 private slots:
     void clientReceived(int);
     void newConnectionRequest(QString);
@@ -30,6 +31,7 @@ private slots:
 private:
     QList<Client*> clients;
     ServeurTCP *serveurEcoute;
+
     QList<LocalFiles> fichiersDisponibles;
     QList<RemoteFiles> fichiers;
 };
