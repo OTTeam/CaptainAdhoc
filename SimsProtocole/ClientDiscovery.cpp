@@ -32,7 +32,7 @@ void ClientDiscovery::newDatagramAvailable()
         QString text = datagram.data();
 
         qDebug()<< "datagram reçu : " << text;
-        if (text == "CaptainAdHocBroadCast")
+        if (text == "CaptainAdHocBroadCast" && senderAddress != socket->localAddress())
         {
             emit DatagramReceived(senderAddress.toString());
         }
