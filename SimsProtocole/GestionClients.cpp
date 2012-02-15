@@ -6,8 +6,8 @@ GestionClients::GestionClients(QObject *parent) :
 {
     serveurEcoute = new TCPServer(this);
     connect(serveurEcoute,SIGNAL(AjouterClient(QTcpSocket*)),this,SLOT(newConnectionDone(QTcpSocket*)));
-    clientDiscoveryModule = new ClientDiscovery(this);
-    connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QString)),this,SLOT(newConnectionRequest(QString)));
+    //clientDiscoveryModule = new ClientDiscovery(this);
+    //connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QString)),this,SLOT(newConnectionRequest(QString)));
 }
 
 

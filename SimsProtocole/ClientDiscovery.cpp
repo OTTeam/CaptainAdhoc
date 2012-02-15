@@ -1,3 +1,5 @@
+#include <QHostInfo>
+
 #include "ClientDiscovery.h"
 #include "utils.h"
 
@@ -32,11 +34,22 @@ void ClientDiscovery::newDatagramAvailable()
         QString text = datagram.data();
 
         qDebug()<< "datagram reçu : " << text;
+
         if (text == "CaptainAdHocBroadCast" && senderAddress != QHostAddress::LocalHost)
         {
-            qDebug() << "sender :" << senderAddress.toString();
-            qDebug() << "local :" << socket->localAddress().toString();
-            emit DatagramReceived(senderAddress.toString());
+            QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
+            bool localSent = false;
+            foreach (QHostAddress add, hostInfo.addresses())
+            {
+                qDebug() << "local : " << add.toString();
+                if (senderAddress == add)
+                {
+                    localSent = true;
+                }
+            }
+            if (localSent == false)
+                emit DatagramReceived(senderAddress.toString());
+
         }
     }
 
