@@ -5,11 +5,11 @@
 #include <QTcpServer>
 
 
-class ServeurTCP : public QObject
+class TCPServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServeurTCP(QObject *parent = 0);
+    explicit TCPServer(QObject *parent = 0);
     bool ServerStarted();
     bool StartServer();
 

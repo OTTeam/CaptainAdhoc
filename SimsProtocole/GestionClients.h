@@ -7,6 +7,7 @@
 
 #include "Client.h"
 #include "ServeurTCP.h"
+#include "ClientDiscovery.h"
 
 
 class GestionClients : public QObject
@@ -19,6 +20,7 @@ public:
     
 signals:
     void TransfertUpdate(int);
+    void NetworkSpeedUpdate(int);
     void ClientNumberChanged(int);
 
 private slots:
@@ -28,10 +30,12 @@ private slots:
     void clientDisconnect();
     void clientConnected(Client *);
 
+    void dlSpeedUpdate(int);
+
 private:
     QList<Client*> clients;
-    ServeurTCP *serveurEcoute;
-
+    TCPServer *serveurEcoute;
+    ClientDiscovery *clientDiscoveryModule;
     QList<LocalFiles> fichiersDisponibles;
     QList<RemoteFiles> fichiers;
 };

@@ -4,9 +4,10 @@
 GestionClients::GestionClients(QObject *parent) :
     QObject(parent)
 {
-    serveurEcoute = new ServeurTCP(this);
+    serveurEcoute = new TCPServer(this);
     connect(serveurEcoute,SIGNAL(AjouterClient(QTcpSocket*)),this,SLOT(newConnectionDone(QTcpSocket*)));
-
+    clientDiscoveryModule = new ClientDiscovery(this);
+    connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QString)),this,SLOT(newConnectionRequest(QString)));
 }
 
 
@@ -51,8 +52,14 @@ void GestionClients::clientConnected(Client *client)
 {
     connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
     connect(client,SIGNAL(disconnected()),this,SLOT(clientDisconnect()));
+    connect(client,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(dlSpeedUpdate(int)));
     clients.push_back(client);
     emit ClientNumberChanged(clients.size());
+}
+
+void GestionClients::dlSpeedUpdate(int bytesPerSec)
+{
+    emit NetworkSpeedUpdate(bytesPerSec);
 }
 
 

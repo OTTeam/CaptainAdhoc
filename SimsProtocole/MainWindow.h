@@ -24,12 +24,15 @@ private slots:
     void HelloClicked();
     void UpdateClientsNumber(int);
     void UpdateProgress(int);
+
+    void UpdateDlSpeed(int);
 private:
     QLineEdit *address;
     QPushButton *btconnect;
     QPushButton *sendHello;
     QProgressBar *progressBar;
     QLabel *lbNbClients;
+    QLabel *lbDlSpeed;
 
     GestionClients *gestionnaire;
 };

@@ -2,7 +2,7 @@
 #include "ServeurTCP.h"
 #include <QMessageBox>
 
-ServeurTCP::ServeurTCP(QObject *parent) :
+TCPServer::TCPServer(QObject *parent) :
     QObject(parent)
 {
 
@@ -14,13 +14,13 @@ ServeurTCP::ServeurTCP(QObject *parent) :
 
 
 
-bool ServeurTCP::ServerStarted()
+bool TCPServer::ServerStarted()
 {
     return serverStarted;
 }
 
 
-bool ServeurTCP::StartServer()
+bool TCPServer::StartServer()
 {
     // Gestion du serveur
     serveur = new QTcpServer(this);
@@ -37,7 +37,7 @@ bool ServeurTCP::StartServer()
 }
 
 
-void ServeurTCP::nouvelleConnexion()
+void TCPServer::nouvelleConnexion()
 {
     QTcpSocket *nouveauClient = serveur->nextPendingConnection();
     emit AjouterClient(nouveauClient);

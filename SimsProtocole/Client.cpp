@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QFileDialog>
+#include <QTime>
 
 Client::Client(QTcpSocket *s)
 {
@@ -28,6 +29,16 @@ void Client::socketConfig()
     connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(donneesEcrites(qint64)));
     messageLength = 0;
     etat = IDLE;
+
+
+    bytesReceived = 0;
+    previousBytesReceived = 0;
+    bytesSent = 0;
+    timerDlSpeed = new QTimer(this);
+    connect(timerDlSpeed,SIGNAL(timeout()),this,SLOT(dlSpeedMeasure()));
+    timerDlSpeed->setInterval(500);
+    timerDlSpeed->start();
+    timerDlSpeed->setSingleShot(false);
 }
 
 
@@ -63,6 +74,7 @@ void Client::donneesRecues()
     // Si tout va bien, on continue : on récupère le message
     QDataStream in(socket);
 
+
     while (socket->bytesAvailable()>0)
     {
         if (messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
@@ -71,6 +83,7 @@ void Client::donneesRecues()
                 return;
 
             in >> messageLength; // Si on a reçu la taille du message en entier, on la récupère
+
         }
 
         // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
@@ -145,6 +158,7 @@ void Client::receivedFileRequestInit()
     out << (quint16) (paquet.size() - sizeof(quint16));
 
     socket->write(paquet); // On envoie le paquet
+    timerDlSpeed->start();
 }
 
 
@@ -169,7 +183,7 @@ void Client::receivedFileData()
         bytesReceived = 0;
         fichierRecv->close();
         delete fichierRecv;
-
+        timerDlSpeed->stop();
     }
 }
 
@@ -276,4 +290,21 @@ void Client::connexion()
 QString Client::getAddress()
 {
     return socket->localAddress().toString();
+}
+
+
+void Client::dlSpeedMeasure()
+{
+    quint64 bytesDiff = (bytesReceived-previousBytesReceived)*2;
+    previousBytesReceived = bytesReceived;
+    QString text;
+    if (bytesDiff > 10000)
+    {
+        text = QString::number(bytesDiff/1000) + "Kb/s";
+    }
+    else
+    {
+        text = QString::number(bytesDiff) + "b/s";
+    }
+    emit NetworkSpeedUpdate(bytesDiff);
 }

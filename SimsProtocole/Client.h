@@ -6,7 +6,7 @@
 #include <QString>
 #include <QList>
 #include <QFile>
-
+#include <QTimer>
 #include "utils.h"
 
 
@@ -32,6 +32,7 @@ private:
 
 signals:
     void NewData(int);
+    void NetworkSpeedUpdate(int);
     void connected(Client *);
     void disconnected();
 
@@ -42,11 +43,13 @@ private slots:
     void deconnexionSocket();
     void connexion();
 
+    void dlSpeedMeasure();
 private:
     QTcpSocket *socket;
     quint16 messageLength;
 
     quint64 bytesReceived;
+    quint64 previousBytesReceived;
     quint64 filesize;
     QFile *fichierRecv;
 
@@ -54,6 +57,8 @@ private:
     quint64 bytesSent;
 
     ETAT_CLIENT etat;
+
+    QTimer *timerDlSpeed;
 
 };
 

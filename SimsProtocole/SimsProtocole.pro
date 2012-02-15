@@ -14,10 +14,12 @@ SOURCES += main.cpp\
         MainWindow.cpp \
     ServeurTCP.cpp \
     GestionClients.cpp \
-    Client.cpp
+    Client.cpp \
+    ClientDiscovery.cpp
 
 HEADERS  += MainWindow.h \
     ServeurTCP.h \
     utils.h \
     GestionClients.h \
-    Client.h
+    Client.h \
+    ClientDiscovery.h

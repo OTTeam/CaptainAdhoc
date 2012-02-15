@@ -13,9 +13,14 @@ MainWindow::MainWindow(QWidget *parent)
     address = new QLineEdit("127.0.0.1",this);
     btconnect = new QPushButton("Connect",this);
     sendHello = new QPushButton("Envoi d'un fichiers",this);
+
     progressBar = new QProgressBar(this);
     progressBar->setMinimum(0);
     progressBar->setMaximum(100);
+    lbDlSpeed = new QLabel("",this);
+
+
+
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
     connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
@@ -25,7 +30,14 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(address);
     layout->addWidget(btconnect);
     layout->addWidget(sendHello);
-    layout->addWidget(progressBar);
+
+
+    QHBoxLayout *dlLayout = new QHBoxLayout();
+
+    dlLayout->addWidget(progressBar);
+    dlLayout->addWidget(lbDlSpeed);
+
+    layout->addLayout(dlLayout);
     this->setLayout(layout);
 
 /*
@@ -36,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this,SIGNAL(InitiateConnection(QString)),gestionnaire,SLOT(newConnectionRequest(QString)));
     connect(gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
     connect(gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
+    connect(gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
  }
 
 MainWindow::~MainWindow()
@@ -69,4 +82,20 @@ void MainWindow::HelloClicked()
  {
 
      progressBar->setValue(Progress);
+ }
+
+
+ void MainWindow::UpdateDlSpeed(int bytesPerSec)
+ {
+    QString text;
+     if (bytesPerSec > 10000)
+     {
+         text = QString::number(bytesPerSec/1000) + "Kb/s";
+     }
+     else
+     {
+         text = QString::number(bytesPerSec) + "b/s";
+     }
+
+    lbDlSpeed->setText(text);
  }

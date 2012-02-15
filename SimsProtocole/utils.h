@@ -7,6 +7,9 @@
 class Client;
 
 #define PORT_SERVEUR 50855
+#define DISCOVERY_PORT 50854
+
+#define BROADCAST_INTERVAL 10000
 #define BLOCK_SIZE 50000
 
 
