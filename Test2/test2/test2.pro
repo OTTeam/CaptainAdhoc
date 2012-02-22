@@ -17,11 +17,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-win32: LIBS += -L"C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/" -lwlanapi
-win32: LIBS += -L"C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/" -lole32
+win32: LIBS += -L"C:/Microsoft SDK 7/Lib/" -lwlanapi
+win32: LIBS += -L"C:/Microsoft SDK 7/Lib/" -lole32
 
-INCLUDEPATH += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
-DEPENDPATH += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
+INCLUDEPATH += "C:/Microsoft SDK 7/Include"
+DEPENDPATH += "C:/Microsoft SDK 7/Include"
 
-win32: PRE_TARGETDEPS += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/wlanapi.lib"
-win32: PRE_TARGETDEPS += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/ole32.lib"
+win32: PRE_TARGETDEPS += "C:/Microsoft SDK 7/Lib/wlanapi.lib"
+win32: PRE_TARGETDEPS += "C:/Microsoft SDK 7/Lib/ole32.lib"
