@@ -17,11 +17,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-win32: LIBS += -L"$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Lib/" -lwlanapi
-win32: LIBS += -L"$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Lib/" -lole32
+win32: LIBS += -L"C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/" -lwlanapi
+win32: LIBS += -L"C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/" -lole32
 
-INCLUDEPATH += "$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Include"
-DEPENDPATH += "$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Include"
+INCLUDEPATH += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
+DEPENDPATH += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
 
-win32: PRE_TARGETDEPS += "$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Lib/wlanapi.lib"
-win32: PRE_TARGETDEPS += "$$PWD/../../../../../../Program Files/Microsoft SDKs/Windows/v7.1/Lib/ole32.lib"
+win32: PRE_TARGETDEPS += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/wlanapi.lib"
+win32: PRE_TARGETDEPS += "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/ole32.lib"

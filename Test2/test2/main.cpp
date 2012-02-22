@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define ADHOC_SSID ADHOC_SSID
+#define ADHOC_SSID L"CAPTAIN_ADHOC"
 
 
 
@@ -46,36 +46,36 @@ public:
     }
 
     ULONG STDMETHODCALLTYPE AddRef()
-   {
-      return 2;
-   }
+    {
+        return 2;
+    }
 
-   ULONG STDMETHODCALLTYPE Release()
-   {
-      return 1;
-   }
+    ULONG STDMETHODCALLTYPE Release()
+    {
+        return 1;
+    }
 
-   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
-   {
-      HRESULT hr = S_OK;
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
+    {
+        HRESULT hr = S_OK;
 
-      if (riid == IID_IUnknown)
-      {
+        if (riid == IID_IUnknown)
+        {
 
-         *ppvObj = (IUnknown *)this;
-      }
-      else if (riid == IID_IDot11AdHocManagerNotificationSink)
-      {
-         *ppvObj = (IDot11AdHocManagerNotificationSink *)this;
-      }
-      else
-      {
-         hr = E_NOINTERFACE;
-         *ppvObj = NULL;
-      }
+            *ppvObj = (IUnknown *)this;
+        }
+        else if (riid == IID_IDot11AdHocManagerNotificationSink)
+        {
+            *ppvObj = (IDot11AdHocManagerNotificationSink *)this;
+        }
+        else
+        {
+            hr = E_NOINTERFACE;
+            *ppvObj = NULL;
+        }
 
-      return hr;
-  }
+        return hr;
+    }
 };
 
 class cSink : public IDot11AdHocNetworkNotificationSink
@@ -206,9 +206,9 @@ public:
         {
             *ppvObj = (IUnknown *)this;
         }
-        else if (riid == IID_IDot11AdHocNetworkNotificationSink)
+        else if (riid == IID_IDot11AdHocSecuritySettings)
         {
-            *ppvObj = (IDot11AdHocNetworkNotificationSink *)this;
+            *ppvObj = (IDot11AdHocSecuritySettings *)this;
         }
         else
         {
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
         printf("Creating the network...");
 
         ans = AdHocManager->CreateNetwork(ADHOC_SSID,L"",0x54,NULL,NULL,NULL,&myNet);
-        //AdHocManager->CreateNetwork(SSID, L"", 0x54, NULL, &securitySettings, NULL, &newNet);
+        //ans = AdHocManager->CreateNetwork(ADHOC_SSID, L"", 0x54, NULL, &securitySettings, NULL, &myNet);
         switch (ans)
         {
         case S_OK:
