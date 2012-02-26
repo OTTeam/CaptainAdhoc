@@ -11,8 +11,10 @@
 
 using namespace std;
 
+// SSID du reseau :
 #define ADHOC_SSID L"CAPTAIN_ADHOC"
-
+// Mot de passe du reseau (statique pour le moment, mais c'est moyen secure...) :
+#define ADHOC_PWD L"1491_archibald_1941"
 
 
 
@@ -61,7 +63,6 @@ public:
 
         if (riid == IID_IUnknown)
         {
-
             *ppvObj = (IUnknown *)this;
         }
         else if (riid == IID_IDot11AdHocManagerNotificationSink)
@@ -132,37 +133,36 @@ public:
     }
 
 
-        ULONG STDMETHODCALLTYPE AddRef()
+    ULONG STDMETHODCALLTYPE AddRef()
+    {
+        return 2;
+    }
+
+    ULONG STDMETHODCALLTYPE Release()
+    {
+        return 1;
+    }
+
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
+    {
+        HRESULT hr = S_OK;
+
+        if (riid == IID_IUnknown)
         {
-            return 2;
+            *ppvObj = (IUnknown *)this;
+        }
+        else if (riid == IID_IDot11AdHocNetworkNotificationSink)
+        {
+            *ppvObj = (IDot11AdHocNetworkNotificationSink *)this;
+        }
+        else
+        {
+            hr = E_NOINTERFACE;
+            *ppvObj = NULL;
         }
 
-        ULONG STDMETHODCALLTYPE Release()
-        {
-           return 1;
-        }
-
-       HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
-       {
-          HRESULT hr = S_OK;
-
-          if (riid == IID_IUnknown)
-          {
-
-             *ppvObj = (IUnknown *)this;
-          }
-          else if (riid == IID_IDot11AdHocNetworkNotificationSink)
-          {
-             *ppvObj = (IDot11AdHocNetworkNotificationSink *)this;
-          }
-          else
-          {
-             hr = E_NOINTERFACE;
-             *ppvObj = NULL;
-          }
-
-          return hr;
-      }
+        return hr;
+    }
 };
 
 cSink sink;
@@ -174,16 +174,15 @@ public:
 
     HRESULT __stdcall GetDot11AuthAlgorithm(DOT11_ADHOC_AUTH_ALGORITHM *pAuth)
     {
-        *pAuth = DOT11_ADHOC_AUTH_ALGO_RSNA_PSK;
+        *pAuth = DOT11_ADHOC_AUTH_ALGO_RSNA_PSK;    //WPA2PSK
         return S_OK;
     }
 
     HRESULT __stdcall GetDot11CipherAlgorithm(DOT11_ADHOC_CIPHER_ALGORITHM *pCipher)
     {
-        *pCipher = DOT11_ADHOC_CIPHER_ALGO_CCMP;
+        *pCipher = DOT11_ADHOC_CIPHER_ALGO_CCMP;    //WPA2PSK
         return S_OK;
     }
-
 
     ULONG STDMETHODCALLTYPE AddRef()
     {
@@ -234,19 +233,19 @@ int main(int argc, char *argv[])
     IConnectionPointContainer  * pConnectionPointContainer;
     IConnectionPoint * pConnectionPoint;
     LPWSTR ssid;
-    cout << "Initialising COM Lib ...";
+    cout << "Initialising COM Lib... ";
     ans = CoInitialize(NULL);
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-    cout << "Creating AdHocManager ...";
+    cout << "Creating AdHocManager... ";
     ans = CoCreateInstance(CLSID_Dot11AdHocManager,NULL,CLSCTX_INPROC_SERVER,IID_IDot11AdHocManager,(void**) &AdHocManager);
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-    cout << "Casting AdHocManager in ConnectionPointContainer...";
+    cout << "Casting AdHocManager in ConnectionPointContainer... ";
     ans = AdHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-    cout << "Retrieving connection point for AdHocManagerNotifications...";
+    cout << "Retrieving connection point for AdHocManagerNotifications... ";
     ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
@@ -254,14 +253,14 @@ int main(int argc, char *argv[])
     cManagerSink mSink;
     DWORD sinkCookie;
 
-    cout << "Registering for notifications...";
-    ans = pConnectionPoint->Advise((IUnknown*) &mSink,&sinkCookie);
+    cout << "Registering for notifications... ";
+    ans = pConnectionPoint->Advise((IUnknown*) &mSink, &sinkCookie);
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-    cout << "Getting Network list ...";
-    ans = AdHocManager->GetIEnumDot11AdHocNetworks(NULL,&networks);
+    cout << "Getting Network list... ";
+    ans = AdHocManager->GetIEnumDot11AdHocNetworks(NULL, &networks);
 
-    cout << "OK" << endl  << "Extracting Networks...";
+    cout << "OK" << endl  << "Extracting Networks... ";
     ans = networks->Next(10,network,&cnt);
 
     printf("Got %d networks\n",cnt);
@@ -284,22 +283,22 @@ int main(int argc, char *argv[])
 
     if (found)
     {
-        cout << "Casting NetWork in ConnectionPointContainer...";
+        cout << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
-        cout << "Retrieving connection point for NetworkNotifications...";
+        cout << "Retrieving connection point for NetworkNotifications... ";
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink,&pConnectionPoint);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-        cout << "Registering for notifications...";
+        cout << "Registering for notifications... ";
         ans = pConnectionPoint->Advise((IUnknown*) &sink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
-        printf("Connecting...");
-        ans = myNet->Connect(L"",0x54,false,false);
+        printf("Connecting... ");
+        ans = myNet->Connect(ADHOC_PWD, 0x54, false, false);
         switch (ans)
         {
         case S_OK:
@@ -326,10 +325,9 @@ int main(int argc, char *argv[])
 
     if (!found)
     {
-        printf("Creating the network...");
+        printf("Creating the network... ");
 
-        ans = AdHocManager->CreateNetwork(ADHOC_SSID,L"",0x54,NULL,NULL,NULL,&myNet);
-        //ans = AdHocManager->CreateNetwork(ADHOC_SSID, L"", 0x54, NULL, &securitySettings, NULL, &myNet);
+        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
         switch (ans)
         {
         case S_OK:
@@ -353,20 +351,20 @@ int main(int argc, char *argv[])
 
         printf("\n");
 
-        cout << "Casting NetWork in ConnectionPointContainer...";
+        cout << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
-        cout << "Retrieving connection point for NetworkNotifications...";
+        cout << "Retrieving connection point for NetworkNotifications... ";
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink,&pConnectionPoint);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-        cout << "Registering for notifications...";
+        cout << "Registering for notifications... ";
         ans = pConnectionPoint->Advise((IUnknown*) &sink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
-        cout << "Committing the network...";
+        cout << "Committing the network... ";
         ans = AdHocManager->CommitCreatedNetwork(myNet,false,false);
         switch (ans)
         {
