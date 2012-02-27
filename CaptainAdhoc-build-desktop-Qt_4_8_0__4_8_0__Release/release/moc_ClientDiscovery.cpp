@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ClientDiscovery.h'
 **
-** Created: Mon 27. Feb 10:19:05 2012
+** Created: Mon 27. Feb 10:22:46 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -34,14 +34,14 @@ static const uint qt_meta_data_ClientDiscovery[] = {
       17,   16,   16,   16, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      43,   16,   16,   16, 0x08,
-      66,   16,   16,   16, 0x08,
+      48,   16,   16,   16, 0x08,
+      71,   16,   16,   16, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_ClientDiscovery[] = {
-    "ClientDiscovery\0\0DatagramReceived(QString)\0"
+    "ClientDiscovery\0\0DatagramReceived(QHostAddress)\0"
     "newDatagramAvailable()\0sendNewDatagram()\0"
 };
 
@@ -51,7 +51,7 @@ void ClientDiscovery::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         Q_ASSERT(staticMetaObject.cast(_o));
         ClientDiscovery *_t = static_cast<ClientDiscovery *>(_o);
         switch (_id) {
-        case 0: _t->DatagramReceived((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 0: _t->DatagramReceived((*reinterpret_cast< QHostAddress(*)>(_a[1]))); break;
         case 1: _t->newDatagramAvailable(); break;
         case 2: _t->sendNewDatagram(); break;
         default: ;
@@ -99,7 +99,7 @@ int ClientDiscovery::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void ClientDiscovery::DatagramReceived(QString _t1)
+void ClientDiscovery::DatagramReceived(QHostAddress _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);

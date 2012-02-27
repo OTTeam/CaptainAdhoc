@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'MainWindow.h'
 **
-** Created: Mon 27. Feb 10:19:04 2012
+** Created: Mon 27. Feb 10:22:45 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -34,17 +34,17 @@ static const uint qt_meta_data_MainWindow[] = {
       12,   11,   11,   11, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      40,   11,   11,   11, 0x08,
-      57,   11,   11,   11, 0x08,
-      72,   11,   11,   11, 0x08,
-      97,   11,   11,   11, 0x08,
-     117,   11,   11,   11, 0x08,
+      45,   11,   11,   11, 0x08,
+      62,   11,   11,   11, 0x08,
+      77,   11,   11,   11, 0x08,
+     102,   11,   11,   11, 0x08,
+     122,   11,   11,   11, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_MainWindow[] = {
-    "MainWindow\0\0InitiateConnection(QString)\0"
+    "MainWindow\0\0InitiateConnection(QHostAddress)\0"
     "ConnectClicked()\0HelloClicked()\0"
     "UpdateClientsNumber(int)\0UpdateProgress(int)\0"
     "UpdateDlSpeed(int)\0"
@@ -56,7 +56,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         Q_ASSERT(staticMetaObject.cast(_o));
         MainWindow *_t = static_cast<MainWindow *>(_o);
         switch (_id) {
-        case 0: _t->InitiateConnection((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 0: _t->InitiateConnection((*reinterpret_cast< QHostAddress(*)>(_a[1]))); break;
         case 1: _t->ConnectClicked(); break;
         case 2: _t->HelloClicked(); break;
         case 3: _t->UpdateClientsNumber((*reinterpret_cast< int(*)>(_a[1]))); break;
@@ -107,7 +107,7 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void MainWindow::InitiateConnection(QString _t1)
+void MainWindow::InitiateConnection(QHostAddress _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);

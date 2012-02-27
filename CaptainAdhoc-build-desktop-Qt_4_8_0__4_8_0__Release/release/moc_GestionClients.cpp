@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'GestionClients.h'
 **
-** Created: Mon 27. Feb 10:19:04 2012
+** Created: Mon 27. Feb 10:22:46 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -38,10 +38,10 @@ static const uint qt_meta_data_GestionClients[] = {
  // slots: signature, parameters, type, tag, flags
       86,   15,   15,   15, 0x08,
      106,   15,   15,   15, 0x08,
-     136,   15,   15,   15, 0x08,
-     167,   15,   15,   15, 0x08,
-     186,   15,   15,   15, 0x08,
-     211,   15,   15,   15, 0x08,
+     141,   15,   15,   15, 0x08,
+     172,   15,   15,   15, 0x08,
+     191,   15,   15,   15, 0x08,
+     216,   15,   15,   15, 0x08,
 
        0        // eod
 };
@@ -50,7 +50,7 @@ static const char qt_meta_stringdata_GestionClients[] = {
     "GestionClients\0\0TransfertUpdate(int)\0"
     "NetworkSpeedUpdate(int)\0"
     "ClientNumberChanged(int)\0clientReceived(int)\0"
-    "newConnectionRequest(QString)\0"
+    "newConnectionRequest(QHostAddress)\0"
     "newConnectionDone(QTcpSocket*)\0"
     "clientDisconnect()\0clientConnected(Client*)\0"
     "dlSpeedUpdate(int)\0"
@@ -66,7 +66,7 @@ void GestionClients::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 1: _t->NetworkSpeedUpdate((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 2: _t->ClientNumberChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: _t->clientReceived((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 4: _t->newConnectionRequest((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 4: _t->newConnectionRequest((*reinterpret_cast< QHostAddress(*)>(_a[1]))); break;
         case 5: _t->newConnectionDone((*reinterpret_cast< QTcpSocket*(*)>(_a[1]))); break;
         case 6: _t->clientDisconnect(); break;
         case 7: _t->clientConnected((*reinterpret_cast< Client*(*)>(_a[1]))); break;

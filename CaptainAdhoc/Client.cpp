@@ -13,7 +13,7 @@ Client::Client(QTcpSocket *s)
     socketConfig();}
 
 
-Client::Client(QString address)
+Client::Client(QHostAddress address)
 {
     socket = new QTcpSocket(this);
     socketConfig();
@@ -287,9 +287,9 @@ void Client::connexion()
 }
 
 
-QString Client::getAddress()
+QHostAddress Client::getAddress()
 {
-    return socket->localAddress().toString();
+    return socket->peerAddress();
 }
 
 
