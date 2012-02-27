@@ -1,0 +1,15 @@
+INPUT(
+./release\main.o
+./release\MainWindow.o
+./release\ServeurTCP.o
+./release\GestionClients.o
+./release\Client.o
+./release\ClientDiscovery.o
+./release\WifiManager.o
+./release\moc_MainWindow.o
+./release\moc_ServeurTCP.o
+./release\moc_GestionClients.o
+./release\moc_Client.o
+./release\moc_ClientDiscovery.o
+./release\moc_WifiManager.o
+);

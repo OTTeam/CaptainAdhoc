@@ -1,0 +1,15 @@
+INPUT(
+./debug\main.o
+./debug\MainWindow.o
+./debug\ServeurTCP.o
+./debug\GestionClients.o
+./debug\Client.o
+./debug\ClientDiscovery.o
+./debug\WifiManager.o
+./debug\moc_MainWindow.o
+./debug\moc_ServeurTCP.o
+./debug\moc_GestionClients.o
+./debug\moc_Client.o
+./debug\moc_ClientDiscovery.o
+./debug\moc_WifiManager.o
+);
