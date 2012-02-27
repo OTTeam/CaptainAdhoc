@@ -10,23 +10,24 @@
 Client::Client(QTcpSocket *s)
 {
     socket = s;
-    socketConfig();}
+    ConfigClient();
+}
 
 
 Client::Client(QHostAddress address)
 {
     socket = new QTcpSocket(this);
-    socketConfig();
+    ConfigClient();
     socket->connectToHost(address,PORT_SERVEUR);
 }
 
 
-void Client::socketConfig()
+void Client::ConfigClient()
 {
-    connect(socket, SIGNAL(connected()),         this, SLOT(connexion()));
-    connect(socket, SIGNAL(readyRead()),         this, SLOT(donneesRecues()));
-    connect(socket, SIGNAL(disconnected()),      this, SLOT(deconnexionSocket()));
-    connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(donneesEcrites(qint64)));
+    connect(socket, SIGNAL(connected()),         this, SLOT(socketConnection()));
+    connect(socket, SIGNAL(readyRead()),         this, SLOT(newBytesReceived()));
+    connect(socket, SIGNAL(disconnected()),      this, SLOT(socketDisconnection()));
+    connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(newBytesWritten(qint64)));
     messageLength = 0;
     etat = IDLE;
 
@@ -34,25 +35,32 @@ void Client::socketConfig()
     bytesReceived = 0;
     previousBytesReceived = 0;
     bytesSent = 0;
+
     timerDlSpeed = new QTimer(this);
     connect(timerDlSpeed,SIGNAL(timeout()),this,SLOT(dlSpeedMeasure()));
     timerDlSpeed->setInterval(500);
-    timerDlSpeed->start();
+    //timerDlSpeed->start();
     timerDlSpeed->setSingleShot(false);
+
+    timerUlSpeed = new QTimer(this);
+    connect(timerUlSpeed,SIGNAL(timeout()),this,SLOT(ulSpeedMeasure()));
+    timerUlSpeed->setInterval(500);
+    //timerUlSpeed->start();
+    timerUlSpeed->setSingleShot(false);
 }
 
 
 Client::~Client()
 {
-    if (fichierRecv != NULL && fichierRecv->isOpen())
+    if (fileToReceive != NULL && fileToReceive->isOpen())
     {
-        fichierRecv->close();
-        delete fichierRecv;
+        fileToReceive->close();
+        delete fileToReceive;
     }
-    if (fichierSend!= NULL && fichierSend->isOpen())
+    if (fileToSend!= NULL && fileToSend->isOpen())
     {
-        fichierSend->close();
-        delete fichierSend;
+        fileToSend->close();
+        delete fileToSend;
     }
 
     delete socket;
@@ -69,7 +77,7 @@ Client::~Client()
  * LIST_REQUEST      : anuaire de fichiers disponibles : sous la forme nomFic1, taille1, nomFic2, Taille2....
  *
 */
-void Client::donneesRecues()
+void Client::newBytesReceived()
 {
     // Si tout va bien, on continue : on récupère le message
     QDataStream in(socket);
@@ -136,10 +144,8 @@ void Client::receivedFileRequestInit()
     QString path = QFileDialog::getExistingDirectory(0,"Enregistrer le fichier sous...");
     path += "\\" + fileRequested;
 
-    QMessageBox::information(0,"receiving", path);
-
-    fichierRecv = new QFile(path);
-    fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
+    fileToReceive = new QFile(path);
+    fileToReceive->open(QIODevice::WriteOnly | QIODevice::Truncate);
 
     bytesReceived = 0;
 
@@ -165,7 +171,8 @@ void Client::receivedFileRequestInit()
 void Client::receivedFileRequestAck()
 {
     etat = SENDING_FILE;
-    donneesEcrites(0);
+    timerUlSpeed->start();
+    newBytesWritten(0);
 }
 
 
@@ -175,14 +182,14 @@ void Client::receivedFileData()
     QByteArray data;
     in >> data;
     bytesReceived += data.length();
-    fichierRecv->write(data);
-    emit NewData(bytesReceived*100/filesize);
+    fileToReceive->write(data);
+    emit BytesReceivedUpdate(bytesReceived*100/filesize);
 
     if (bytesReceived == filesize)
     {
         bytesReceived = 0;
-        fichierRecv->close();
-        delete fichierRecv;
+        fileToReceive->close();
+        delete fileToReceive;
         timerDlSpeed->stop();
     }
 }
@@ -210,8 +217,9 @@ void Client::sendMessage()
     QString filePath = QFileDialog::getOpenFileName(0,"Sélectionnez le fichier à envoyer");
 
     // ouverture du fichier
-    fichierSend = new QFile(filePath);
-    fichierSend->open(QIODevice::ReadOnly);
+    fileToSend = new QFile(filePath);
+    fileToSend->open(QIODevice::ReadOnly);
+
     // changement d'état pour pouvoir envoyer la suite lors de l'appel au slot "donneesEcrites"
     etat = WAITING_ACK;
     bytesSent=0;
@@ -232,27 +240,26 @@ void Client::sendMessage()
 
     QMessageBox::information(0,"sending", SendFilename);
     socket->write(paquet); // On envoie le paquet
-
 }
 
 /*
  * Slot appelé à chaque écriture de données sur la socket, permet de ne pas être bloquant sur le socket->write()
  * si le buffer est plein.
  */
-void Client::donneesEcrites(qint64 bytes)
+void Client::newBytesWritten(qint64 bytes)
 {
     if (etat == SENDING_FILE)
     {
-        QFileInfo fileInfo(fichierSend->fileName());
+        QFileInfo fileInfo(fileToSend->fileName());
 
         int filesize = fileInfo.size();
         quint16 type = FILE_DATA;
         QByteArray paquet;
         QDataStream out(&paquet, QIODevice::WriteOnly);
 
-        QByteArray data = fichierSend->read(BLOCK_SIZE);
+        QByteArray data = fileToSend->read(BLOCK_SIZE);
         bytesSent += data.size();
-        emit NewData(bytesSent*100/filesize);
+        emit BytesSentUpdate(bytesSent*100/filesize);
         if (data.length() > 0)
         {
             out << (quint16) 0;
@@ -266,22 +273,23 @@ void Client::donneesEcrites(qint64 bytes)
 
         } else
         {
-            fichierSend->close();
-            delete fichierSend;
+            fileToSend->close();
+            delete fileToSend;
             bytesSent = 0;
+            timerUlSpeed->stop();
             etat = IDLE;
         }
     }
 }
 
 
-void Client::deconnexionSocket()
+void Client::socketDisconnection()
 {
     emit disconnected();
 }
 
 
-void Client::connexion()
+void Client::socketConnection()
 {
     emit connected(this);
 }
@@ -297,14 +305,14 @@ void Client::dlSpeedMeasure()
 {
     quint64 bytesDiff = (bytesReceived-previousBytesReceived)*2;
     previousBytesReceived = bytesReceived;
-    QString text;
-    if (bytesDiff > 10000)
-    {
-        text = QString::number(bytesDiff/1000) + "Kb/s";
-    }
-    else
-    {
-        text = QString::number(bytesDiff) + "b/s";
-    }
-    emit NetworkSpeedUpdate(bytesDiff);
+
+    emit DownloadSpeedUpdate(bytesDiff);
+}
+
+void Client::ulSpeedMeasure()
+{
+    quint64 bytesDiff = (bytesSent-previousBytesSent)*2;
+    previousBytesSent = bytesSent;
+
+    emit UploadSpeedUpdate(bytesDiff);
 }

@@ -4,8 +4,8 @@
 GestionClients::GestionClients(QObject *parent) :
     QObject(parent)
 {
-    serveurEcoute = new TCPServer(this);
-    connect(serveurEcoute,SIGNAL(AjouterClient(QTcpSocket*)),this,SLOT(newConnectionDone(QTcpSocket*)));
+    listeningServer = new TCPServer(this);
+    connect(listeningServer,SIGNAL(AjouterClient(QTcpSocket*)),this,SLOT(newConnectionDone(QTcpSocket*)));
     clientDiscoveryModule = new ClientDiscovery(this);
     connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QHostAddress)),this,SLOT(newConnectionRequest(QHostAddress)));
 }
@@ -13,7 +13,16 @@ GestionClients::GestionClients(QObject *parent) :
 
 void GestionClients::clientReceived(int percentComplete)
 {
-    emit TransfertUpdate(percentComplete);
+    Client *client = (Client *) sender();
+
+    emit ClientDownloadUpdate(client, percentComplete);
+}
+
+void GestionClients::clientSent(int percentComplete)
+{
+    Client *client = (Client *) sender();
+
+    emit ClientUploadUpdate(client, percentComplete);
 }
 
 
@@ -48,16 +57,29 @@ void GestionClients::newConnectionDone(QTcpSocket *socket)
 
 void GestionClients::clientConnected(Client *client)
 {
-    connect(client,SIGNAL(NewData(int)),this,SLOT(clientReceived(int)));
-    connect(client,SIGNAL(disconnected()),this,SLOT(clientDisconnect()));
-    connect(client,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(dlSpeedUpdate(int)));
+    connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
+    connect(client,SIGNAL(BytesSentUpdate(int))    , this, SLOT(clientSent(int)));
+    connect(client,SIGNAL(disconnected())          , this, SLOT(clientDisconnect()));
+    connect(client,SIGNAL(DownloadSpeedUpdate(int)), this, SLOT(downloadSpeedUpdate(int)));
+    connect(client,SIGNAL(UploadSpeedUpdate(int))  , this, SLOT(uploadSpeedUpdate(int)));
+
     clients.push_back(client);
+
     emit ClientNumberChanged(clients.size());
 }
 
-void GestionClients::dlSpeedUpdate(int bytesPerSec)
+void GestionClients::uploadSpeedUpdate(int bytesPerSec)
 {
-    emit NetworkSpeedUpdate(bytesPerSec);
+    Client *client = (Client *) sender();
+
+    emit ClientUploadSpeedUpdate(client, bytesPerSec);
+}
+
+void GestionClients::downloadSpeedUpdate(int bytesPerSec)
+{
+    Client *client = (Client *) sender();
+
+    emit ClientUploadSpeedUpdate(client, bytesPerSec);
 }
 
 
@@ -74,6 +96,4 @@ void GestionClients::sendToAll()
     {
         client->sendMessage();
     }
-
-
 }

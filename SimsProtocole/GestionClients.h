@@ -19,25 +19,35 @@ public:
 
     
 signals:
-    void TransfertUpdate(int);
-    void NetworkSpeedUpdate(int);
+    //void TransfertUpdate(int);
+    void ClientUploadUpdate(Client *,int);
+    void ClientDownloadUpdate(Client *,int);
+
+    //void NetworkSpeedUpdate(int);
+    void ClientUploadSpeedUpdate(Client *,int);
+    void ClientDownloadSpeedUpdate(Client *,int);
+
     void ClientNumberChanged(int);
 
 private slots:
     void clientReceived(int);
+    void clientSent(int);
+
     void newConnectionRequest(QHostAddress);
     void newConnectionDone(QTcpSocket *);
+
     void clientDisconnect();
     void clientConnected(Client *);
 
-    void dlSpeedUpdate(int);
+    void uploadSpeedUpdate(int);
+    void downloadSpeedUpdate(int);
 
 private:
     QList<Client*> clients;
-    TCPServer *serveurEcoute;
+    TCPServer *listeningServer;
     ClientDiscovery *clientDiscoveryModule;
-    QList<LocalFiles> fichiersDisponibles;
-    QList<RemoteFiles> fichiers;
+    QList<LocalFiles> localFiles;
+    QList<RemoteFiles> remoteFiles;
 };
 
 

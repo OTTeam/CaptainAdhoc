@@ -22,7 +22,7 @@ public:
     QHostAddress getAddress();
     void sendMessage();
 private:
-    void socketConfig();
+    void ConfigClient();
 
     void receivedFileRequest();     // demande de fichier de la part du client
     void receivedFileRequestInit(); // réponse du serveur lors de la demande (confirmation nom, taille)
@@ -32,33 +32,44 @@ private:
 
 signals:
     void NewData(int);
-    void NetworkSpeedUpdate(int);
+    void BytesSentUpdate(int);
+    void BytesReceivedUpdate(int);
+
+    void DownloadSpeedUpdate(int);
+    void UploadSpeedUpdate(int);
+
     void connected(Client *);
     void disconnected();
 
 private slots:
 
-    void donneesRecues();
-    void donneesEcrites(qint64);
-    void deconnexionSocket();
-    void connexion();
+    void newBytesReceived();
+    void newBytesWritten(qint64);
+    void socketDisconnection();
+    void socketConnection();
 
     void dlSpeedMeasure();
+    void ulSpeedMeasure();
 private:
     QTcpSocket *socket;
+
     quint16 messageLength;
 
     quint64 bytesReceived;
     quint64 previousBytesReceived;
-    quint64 filesize;
-    QFile *fichierRecv;
 
-    QFile *fichierSend;
+    quint64 filesize;
+
+    QFile *fileToReceive;
+    QFile *fileToSend;
+
     quint64 bytesSent;
+    quint64 previousBytesSent;
 
     ETAT_CLIENT etat;
 
     QTimer *timerDlSpeed;
+    QTimer *timerUlSpeed;
 
 };
 

@@ -23,9 +23,10 @@ private slots:
     void ConnectClicked();
     void HelloClicked();
     void UpdateClientsNumber(int);
-    void UpdateProgress(int);
 
-    void UpdateDlSpeed(int);
+    void UpdateClientProgress(Client *, int);
+
+    void UpdateDlSpeed(Client *, int);
 private:
     QLineEdit *address;
     QPushButton *btconnect;
