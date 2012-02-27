@@ -165,13 +165,15 @@ public:
 
     HRESULT __stdcall GetDot11AuthAlgorithm(DOT11_ADHOC_AUTH_ALGORITHM *pAuth)
     {
-        *pAuth = DOT11_ADHOC_AUTH_ALGO_RSNA_PSK;    //WPA2PSK
+        *pAuth = DOT11_ADHOC_AUTH_ALGO_80211_OPEN;  //WEP
+        //*pAuth = DOT11_ADHOC_AUTH_ALGO_RSNA_PSK;    //WPA2PSK
         return S_OK;
     }
 
     HRESULT __stdcall GetDot11CipherAlgorithm(DOT11_ADHOC_CIPHER_ALGORITHM *pCipher)
     {
-        *pCipher = DOT11_ADHOC_CIPHER_ALGO_CCMP;    //WPA2PSK
+        *pCipher = DOT11_ADHOC_CIPHER_ALGO_WEP;     //WEP
+        //*pCipher = DOT11_ADHOC_CIPHER_ALGO_CCMP;    //WPA2PSK
         return S_OK;
     }
 
