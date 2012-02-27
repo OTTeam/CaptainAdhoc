@@ -1,17 +1,11 @@
-#include "fileindexdao.h"
+#include "FileIndexDao.h"
 #include <QSqlQuery>
 #include <QVariant>
 #include <QDebug>
 
-static const char * TABLE_NAME = "FILES";
-static const char * COLUMN_ID = "id";
-static const char * COLUMN_NAME = "name";
-static const char * COLUMN_PATH = "path";
-
-FileIndexDao::FileIndexDao(QSqlDatabase database) : _database(database), _insertQuery(database)
+FileIndexDao::FileIndexDao(QSqlDatabase database) : _database(database)
 {
-    _insertQuery.prepare(QString("INSERT INTO ") + TABLE_NAME + "("
-                  + COLUMN_NAME + "," + COLUMN_PATH + ") VALUES (:name, :path);");
+
 }
 
 bool FileIndexDao::insertFile(FileModel& model)
@@ -49,9 +43,17 @@ QList<FileModel> FileIndexDao::getAllFiles()
     return list;
 }
 
-QList<FileModel> FileIndexDao::searchFiles(const QString& keyword)
+QList<FileModel> FileIndexDao::searchFiles(const QString& keyword, bool wildcard)
 {
-    QSqlQuery q("SELECT id, name, base_dir, dir_path, path, index_time FROM FILES WHERE name LIKE '%" + keyword + "%'", _database);
+    QString queryString = "SELECT id, name, base_dir, dir_path, path, index_time FROM FILES WHERE name LIKE '";
+    if (!wildcard)
+        queryString.append("%");
+    queryString.append(keyword);
+    if (!wildcard)
+        queryString.append("%");
+    queryString.append("' ESCAPE '/'");
+//    QSqlQuery q("SELECT id, name, base_dir, dir_path, path, index_time FROM FILES WHERE name LIKE '%" + keyword + "%' ESCAPE '/'", _database);
+    QSqlQuery q(queryString, _database);
     q.exec();
     QList<FileModel> list;
     while (q.next()) {

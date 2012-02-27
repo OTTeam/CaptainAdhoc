@@ -4,7 +4,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QList>
-#include "filemodel.h"
+#include "FileModel.h"
 
 class FileIndexDao
 {
@@ -17,7 +17,7 @@ public:
 
     QList<FileModel> getAllFiles();
 
-    QList<FileModel> searchFiles(const QString& keyword);
+    QList<FileModel> searchFiles(const QString& keyword, bool wildcard);
 
     void setDatabase(QSqlDatabase db) { _database = db; }
 
@@ -28,7 +28,6 @@ private:
     static bool createIndex(QSqlDatabase database);
 
     QSqlDatabase _database;
-    QSqlQuery _insertQuery;
 };
 
 #endif // FILEINDEXDAO_H

@@ -1,4 +1,4 @@
-#include "fileindexer.h"
+#include "FileIndexer.h"
 #include <QDebug>
 #include <QDirIterator>
 
@@ -34,9 +34,13 @@ qint32 FileIndexer::updateDatabase()
     return count;
 }
 
-QList<FileModel> FileIndexer::searchFiles(const QString& keyword)
+QList<FileModel> FileIndexer::searchFiles(QString keyword)
 {
-    return _dao.searchFiles(keyword);
+    QString kw = keyword;
+    bool wildcard = (kw.indexOf('%') > -1 || kw.indexOf('*') > -1);
+    kw.replace('_', "/_").replace('*', '%').replace('?', '_');
+    qDebug() << "keyword = " << kw;
+    return _dao.searchFiles(kw, wildcard);
 }
 
 /*!

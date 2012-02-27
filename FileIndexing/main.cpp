@@ -9,7 +9,14 @@
 
 #include <iostream>
 
-#include "fileindexer.h"
+#include "FileIndexer.h"
+
+static void printFileNames(QList<FileModel> list)
+{
+    foreach (FileModel file, list) {
+        qDebug() << file.name();
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -33,25 +40,35 @@ int main(int argc, char *argv[])
     FileIndexer indexer(db);
     indexer.addDirectory("C:/temp/test_sqlite/test_filesystem");
 //    indexer.addDirectory("C:/Qt/2009.02/qt/src/sql");
-    QStringList nameFilters;
-    nameFilters << "*.cpp" << "*.h";
-    indexer.setNameFilters(nameFilters);
+//    QStringList nameFilters;
+//    nameFilters << "*.cpp" << "*.h";
+//    indexer.setNameFilters(nameFilters);
     qint32 count = indexer.updateDatabase();
 
-    qDebug() << "Indexed " << count << " files in " << time.elapsed() << "ms";
+    qDebug() << "Indexed " << count << " files in" << time.elapsed() << "ms";
 
     QList<FileModel> list = indexer.getAllIndexedFiles();
-    qDebug() << "Total number of indexed files : " << list.size();
+    qDebug() << "Total number of indexed files :" << list.size();
 
     FileIndexDao dao(db);
 
     FileModel file;
     bool result = dao.getFile(1, file);
     if (result)
-        qDebug() << "file : " << file;
+        qDebug() << "file :" << file;
 
     list = indexer.searchFiles("fileindexer");
-    qDebug() << "list : " << list;
+    printFileNames(list);
+
+    printFileNames(indexer.searchFiles("*.cpp"));
+
+    printFileNames(indexer.searchFiles("?ileindexer*"));
+
+    printFileNames(indexer.searchFiles("?ndexer*"));
+
+    printFileNames(indexer.searchFiles("test_filesystem"));
+
+    printFileNames(indexer.searchFiles("*"));
 
     db.close();
     return a.exec();

@@ -1,4 +1,4 @@
-#include "filemodel.h"
+#include "FileModel.h"
 #include <sstream>
 #include <QDebug>
 
