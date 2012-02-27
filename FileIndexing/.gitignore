@@ -1,0 +1,6 @@
+debug
+release
+Makefile*
+*.o
+*.exe
+*.sqlite
