@@ -3,7 +3,7 @@
 
 #include <QDir>
 #include <QList>
-#include "fileindexdao.h"
+#include "FileIndexDao.h"
 
 
 class FileIndexer
@@ -19,7 +19,7 @@ public:
 
     QList<FileModel> getAllIndexedFiles();
 
-    QList<FileModel> searchFiles(const QString& keyword);
+    QList<FileModel> searchFiles(QString keyword);
 
     void setDatabase(QSqlDatabase db) { _dao.setDatabase(db); }
 
