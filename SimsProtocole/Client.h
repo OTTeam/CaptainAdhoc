@@ -17,9 +17,9 @@ class Client : public QObject
     Q_OBJECT
 public:
     Client(QTcpSocket *socket);
-    Client(QString address);
+    Client(QHostAddress address);
     ~Client();
-    QString getAddress();
+    QHostAddress getAddress();
     void sendMessage();
 private:
     void socketConfig();

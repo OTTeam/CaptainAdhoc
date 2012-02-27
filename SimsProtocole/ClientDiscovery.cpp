@@ -33,22 +33,26 @@ void ClientDiscovery::newDatagramAvailable()
         socket->readDatagram(datagram.data(), datagram.size(),&senderAddress);
         QString text = datagram.data();
 
-        qDebug()<< "datagram reçu : " << text;
+        qDebug() << "datagram reçu : " << text;
+        qDebug() << "----- senderAddress" << senderAddress.toString() << "-----";
 
-        if (text == "CaptainAdHocBroadCast" && senderAddress != QHostAddress::LocalHost)
+        if (text == "CaptainAdHocBroadCast")
         {
             QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
             bool localSent = false;
+            qDebug() << "************* Local ***************";
             foreach (QHostAddress add, hostInfo.addresses())
             {
-                qDebug() << "local : " << add.toString();
+                qDebug() << add.toString();
                 if (senderAddress == add)
                 {
                     localSent = true;
                 }
             }
+            qDebug() << "***********************************";
+
             if (localSent == false)
-                emit DatagramReceived(senderAddress.toString());
+                emit DatagramReceived(senderAddress);
 
         }
     }

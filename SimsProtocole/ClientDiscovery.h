@@ -12,7 +12,7 @@ public:
     explicit ClientDiscovery(QObject *parent = 0);
     
 signals:
-    void DatagramReceived(QString);
+    void DatagramReceived(QHostAddress);
 
 private slots:
     void newDatagramAvailable();
