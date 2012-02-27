@@ -2,11 +2,12 @@
 #define WIFIMANAGER_H
 
 #include <QObject>
+#include "utils.h"
 
 // SSID du reseau :
 #define ADHOC_SSID L"CAPTAIN_ADHOC"
-// Mot de passe du reseau (statique pour le moment, mais c'est moyen secure...) :
-#define ADHOC_PWD L"1491_archibald_1941"
+// Mot de passe du reseau :
+#define ADHOC_PWD L"archibald1941"
 
 class WifiManager : public QObject
 {
@@ -18,6 +19,9 @@ public:
 public slots:
     void ConnectWifi();
     void DisconnectWifi();
+
+signals:
+    void ConnectionStatusChanged(CONNECTION_STATUS);
 };
 
 #endif // WIFIMANAGER_H

@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'WifiManager.h'
 **
-** Created: Mon 27. Feb 11:55:30 2012
+** Created: Mon 27. Feb 15:53:59 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,22 +23,26 @@ static const uint qt_meta_data_WifiManager[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       0,       // signalCount
+       1,       // signalCount
+
+ // signals: signature, parameters, type, tag, flags
+      13,   12,   12,   12, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      13,   12,   12,   12, 0x0a,
-      27,   12,   12,   12, 0x0a,
+      56,   12,   12,   12, 0x0a,
+      70,   12,   12,   12, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_WifiManager[] = {
-    "WifiManager\0\0ConnectWifi()\0DisconnectWifi()\0"
+    "WifiManager\0\0ConnectionStatusChanged(CONNECTION_STATUS)\0"
+    "ConnectWifi()\0DisconnectWifi()\0"
 };
 
 void WifiManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -47,12 +51,12 @@ void WifiManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         Q_ASSERT(staticMetaObject.cast(_o));
         WifiManager *_t = static_cast<WifiManager *>(_o);
         switch (_id) {
-        case 0: _t->ConnectWifi(); break;
-        case 1: _t->DisconnectWifi(); break;
+        case 0: _t->ConnectionStatusChanged((*reinterpret_cast< CONNECTION_STATUS(*)>(_a[1]))); break;
+        case 1: _t->ConnectWifi(); break;
+        case 2: _t->DisconnectWifi(); break;
         default: ;
         }
     }
-    Q_UNUSED(_a);
 }
 
 const QMetaObjectExtraData WifiManager::staticMetaObjectExtraData = {
@@ -87,10 +91,17 @@ int WifiManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
+}
+
+// SIGNAL 0
+void WifiManager::ConnectionStatusChanged(CONNECTION_STATUS _t1)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_END_MOC_NAMESPACE

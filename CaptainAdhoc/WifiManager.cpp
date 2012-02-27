@@ -70,8 +70,11 @@ public:
     }
 };
 
-class cSink : public IDot11AdHocNetworkNotificationSink
+class cSink : public QObject, IDot11AdHocNetworkNotificationSink
 {
+signals:
+    void ConnectionStatusChanged(CONNECTION_STATUS);
+
 public:
 
     cSink(){}
@@ -102,23 +105,23 @@ public:
         printf("[NetworkNotif] Status changed : ");
         switch (status)
         {
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_INVALID:
-            printf("INVALID\n");
-            break;
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_DISCONNECTED:
-            printf("DISCONNECTED\n");
-            break;
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTING:
-            printf("CONNECTING\n");
+        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_FORMED:
+            emit ConnectionStatusChanged(FORMED);
             break;
         case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTED:
-            printf("CONNECTED\n");
+            emit ConnectionStatusChanged(CONNECTED);
             break;
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_FORMED:
-            printf("FORMED\n");
+        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_DISCONNECTED:
+            emit ConnectionStatusChanged(DISCONNECTED);
             break;
-        default:
-            printf("UNKNOWN\n");
+//        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_INVALID:
+//            printf("INVALID\n");
+//            break;
+//        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTING:
+//            printf("CONNECTING\n");
+//            break;
+//        default:
+//            printf("UNKNOWN\n");
         }
         return S_OK;
     }
