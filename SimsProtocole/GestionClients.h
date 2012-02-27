@@ -25,7 +25,7 @@ signals:
 
 private slots:
     void clientReceived(int);
-    void newConnectionRequest(QString);
+    void newConnectionRequest(QHostAddress);
     void newConnectionDone(QTcpSocket *);
     void clientDisconnect();
     void clientConnected(Client *);

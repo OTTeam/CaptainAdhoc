@@ -6,20 +6,18 @@ GestionClients::GestionClients(QObject *parent) :
 {
     serveurEcoute = new TCPServer(this);
     connect(serveurEcoute,SIGNAL(AjouterClient(QTcpSocket*)),this,SLOT(newConnectionDone(QTcpSocket*)));
-    //clientDiscoveryModule = new ClientDiscovery(this);
-    //connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QString)),this,SLOT(newConnectionRequest(QString)));
+    clientDiscoveryModule = new ClientDiscovery(this);
+    connect(clientDiscoveryModule,SIGNAL(DatagramReceived(QHostAddress)),this,SLOT(newConnectionRequest(QHostAddress)));
 }
 
 
 void GestionClients::clientReceived(int percentComplete)
 {
-    //Client *clientSender = (Client *)sender();
-    //QMessageBox::information(this,"progress",QString::number(Progress),QMessageBox::Ok);
     emit TransfertUpdate(percentComplete);
 }
 
 
-void GestionClients::newConnectionRequest(QString address)
+void GestionClients::newConnectionRequest(QHostAddress address)
 {
 
     bool clientExists = false;

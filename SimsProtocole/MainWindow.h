@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 signals:
-    void InitiateConnection(QString);
+    void InitiateConnection(QHostAddress);
 private slots:
     void ConnectClicked();
     void HelloClicked();
