@@ -11,14 +11,14 @@ using namespace std;
 
 WifiManager::WifiManager()
 {
-#ifdef trace
+#ifdef TRACE
     cout << "[CONS] WifiManager" << endl;
 #endif
 }
 
 WifiManager::~WifiManager()
 {
-#ifdef trace
+#ifdef TRACE
     cout << "[DEST] WifiManager" << endl;
 #endif
     DisconnectWifi();
