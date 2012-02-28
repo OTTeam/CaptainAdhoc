@@ -26,12 +26,13 @@ WifiManager::WifiManager()
     ans = CoCreateInstance(CLSID_Dot11AdHocManager, NULL, CLSCTX_INPROC_SERVER, IID_IDot11AdHocManager, (LPVOID*) &_adHocManager);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
+    connect( &_networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
 }
 
 WifiManager::~WifiManager()
 {
 #ifdef TRACE
-    cout << "[DEST] WifiManager" << endl;
+    qDebug() << "[DEST] WifiManager";
 #endif
     DisconnectWifi();
 
@@ -247,4 +248,24 @@ bool WifiManager::DisconnectWifi()
     }
 
     return !_connected;
+}
+
+void WifiManager::onConnectionStatusChanged(int status)
+{
+    switch (status)
+    {
+    case FORMED:
+        qDebug() << "Notification received : network formed";
+        _connected = true;
+        break;
+    case CONNECTED:
+        qDebug() << "Notification received : connected to network";
+        _connected = true;
+        break;
+    case DISCONNECTED:
+        qDebug() << "Notification received : disconnected from network";
+        _connected = false;
+        break;
+    }
+
 }

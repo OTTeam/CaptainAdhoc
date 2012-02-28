@@ -9,12 +9,14 @@ HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwo
     pIAdHocNetwork->GetSSID(&pSSID);
     QString ssid = QString::fromWCharArray(pSSID);
     qDebug() << "[ManagerNotif] New network :" << ssid;
+    emit NetworkAdded();
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkRemove(GUID *)
 {
     qDebug() << "[ManagerNotif] a network was removed";
+    emit NetworkRemoved();
     return S_OK;
 }
 
@@ -24,12 +26,14 @@ HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceAdd(IDot11AdHocInt
     pIAdHocInterface->GetFriendlyName(&pIntName);
     QString IntName = QString::fromWCharArray(pIntName);
     qDebug() << "[ManagerNotif] New interface :" << IntName;
+    emit InterfaceAdded();
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceRemove(GUID *)
 {
     qDebug() << "[ManagerNotif] an interface was removed";
+    emit InterfaceRemoved();
     return S_OK;
 }
 

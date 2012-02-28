@@ -11,10 +11,9 @@ class NetworkNotificationSink : public QObject, public IDot11AdHocNetworkNotific
     Q_OBJECT
 
 signals:
-    void ConnectionStatusChanged(CONNECTION_STATUS);
+    void ConnectionStatusChanged(int);
 
 public:
-
     NetworkNotificationSink();
 
     HRESULT __stdcall OnConnectFail(DOT11_ADHOC_CONNECT_FAIL_REASON reason);
