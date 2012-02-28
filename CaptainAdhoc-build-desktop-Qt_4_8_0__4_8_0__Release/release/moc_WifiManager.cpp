@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'WifiManager.h'
 **
-** Created: Tue 28. Feb 09:30:20 2012
+** Created: Tue 28. Feb 09:56:23 2012
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.0)
 **
 ** WARNING! All changes made in this file will be lost!

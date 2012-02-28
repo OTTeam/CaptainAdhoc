@@ -1,7 +1,5 @@
 #include "WifiManager.h"
-#include "ManagerNotificationSink.h"
-#include "NetworkNotificationSink.h"
-#include "SecuritySettings.h"
+
 
 #include <windows.h>
 #include <adhoc.h>
@@ -10,6 +8,9 @@
 
 using namespace std;
 
+WifiManager::WifiManager(){
+
+}
 
 WifiManager::~WifiManager()
 {
@@ -43,7 +44,7 @@ void WifiManager::ConnectWifi()
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
-    ManagerNotificationSink mSink;
+
     DWORD sinkCookie;
 
     cout << "Registering for notifications... ";
@@ -74,8 +75,7 @@ void WifiManager::ConnectWifi()
         }
     }
 
-    NetworkNotificationSink* sink;
-    if (found)
+     if (found)
     {
         cout << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
@@ -87,7 +87,7 @@ void WifiManager::ConnectWifi()
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) sink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
@@ -120,8 +120,8 @@ void WifiManager::ConnectWifi()
     {
         printf("Creating the network... ");
 
-        SecuritySettings* securitySettings;
-        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, securitySettings, NULL, &myNet);
+        SecuritySettings securitySettings;
+        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
         switch (ans)
         {
         case S_OK:
@@ -155,7 +155,7 @@ void WifiManager::ConnectWifi()
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) sink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Committing the network... ";

@@ -3,6 +3,9 @@
 
 #include <QObject>
 #include "utils.h"
+#include "ManagerNotificationSink.h"
+#include "NetworkNotificationSink.h"
+#include "SecuritySettings.h"
 
 // SSID du reseau :
 #define ADHOC_SSID L"CAPTAIN_ADHOC"
@@ -22,6 +25,11 @@ public slots:
 
 signals:
     void ConnectionStatusChanged(CONNECTION_STATUS);
+
+private:
+    ManagerNotificationSink mSink;
+    NetworkNotificationSink nSink;
+
 };
 
 #endif // WIFIMANAGER_H

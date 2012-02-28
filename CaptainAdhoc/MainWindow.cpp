@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
+    manager.ConnectWifi();
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
     connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));

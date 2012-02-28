@@ -4,27 +4,27 @@
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork)
 {
-    LPWSTR pSSID;
-    pIAdHocNetwork->GetSSID(&pSSID);
-    wprintf(L"[ManagerNotif] New network : %s\n", pSSID);
+//    LPWSTR pSSID;
+//    pIAdHocNetwork->GetSSID(&pSSID);
+//    wprintf(L"[ManagerNotif] New network : %s\n", pSSID);
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkRemove(GUID * sig)
 {
-    printf("[ManagerNotif] network removed\n");
+//    printf("[ManagerNotif] network removed\n");
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceAdd(IDot11AdHocInterface *pIAdHocNetwork)
 {
-    printf("[ManagerNotif] New interface\n");
+//    printf("[ManagerNotif] New interface\n");
     return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceRemove(GUID * sig)
 {
-    printf("[ManagerNotif] interface removed\n");
+//    printf("[ManagerNotif] interface removed\n");
     return S_OK;
 }
 

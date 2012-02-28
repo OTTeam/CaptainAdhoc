@@ -5,20 +5,21 @@ NetworkNotificationSink::NetworkNotificationSink(){}
 
 HRESULT __stdcall NetworkNotificationSink::OnConnectFail(DOT11_ADHOC_CONNECT_FAIL_REASON reason)
 {
-    printf("[NetworkNotif] Connection failed : ");
+//    printf("[NetworkNotif] Connection failed : ");
     switch(reason)
     {
     case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-        printf("DOMAIN MISSMATCH\n");
+//        printf("DOMAIN MISSMATCH\n");
         break;
     case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-        printf("PASSPHRASE MISSMATCH\n");
+//        printf("PASSPHRASE MISSMATCH\n");
         break;
     case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-        printf("OTHER\n");
+//        printf("OTHER\n");
         break;
     default:
-        printf("UNKNOWN\n");
+//        printf("UNKNOWN\n");
+        ;
     }
 
     return S_OK;
@@ -26,17 +27,17 @@ HRESULT __stdcall NetworkNotificationSink::OnConnectFail(DOT11_ADHOC_CONNECT_FAI
 
 HRESULT __stdcall NetworkNotificationSink::OnStatusChange( DOT11_ADHOC_NETWORK_CONNECTION_STATUS status)
 {
-    printf("[NetworkNotif] Status changed : ");
+//    printf("[NetworkNotif] Status changed : ");
     switch (status)
     {
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_FORMED:
-        emit ConnectionStatusChanged(FORMED);
+//        emit ConnectionStatusChanged(FORMED);
         break;
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTED:
-        emit ConnectionStatusChanged(CONNECTED);
+//        emit ConnectionStatusChanged(CONNECTED);
         break;
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_DISCONNECTED:
-        emit ConnectionStatusChanged(DISCONNECTED);
+//        emit ConnectionStatusChanged(DISCONNECTED);
         break;
 //        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_INVALID:
 //            printf("INVALID\n");

@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QLabel>
+#include "WifiManager.h"
 
 #include "GestionClients.h"
 
@@ -35,6 +36,7 @@ private:
     QLabel *lbDlSpeed;
 
     GestionClients *gestionnaire;
+    WifiManager manager;
 };
 
 #endif // MAINWINDOW_H
