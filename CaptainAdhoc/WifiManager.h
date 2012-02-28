@@ -6,6 +6,7 @@
 #include "ManagerNotificationSink.h"
 #include "NetworkNotificationSink.h"
 #include "SecuritySettings.h"
+#include "WifiInterface.h"
 
 // SSID du reseau :
 #define ADHOC_SSID "CAPTAIN_ADHOC"
@@ -23,6 +24,8 @@ public:
 
     void RegisterNotifications();
     void UnregisterNotifications();
+    QList<WifiInterface*> * GetInterfaces();
+    void DeleteInterfaceList(QList<WifiInterface*>*);
 
 public slots:
     void ConnectWifi();

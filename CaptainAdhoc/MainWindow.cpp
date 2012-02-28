@@ -23,6 +23,17 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     manager.RegisterNotifications();
+    QList<WifiInterface*> * interfaceList;
+    interfaceList = manager.GetInterfaces();
+    foreach (WifiInterface * intface,*interfaceList)
+    {
+        qDebug() << "Interface :" << intface->GetName();
+        qDebug() << "Radio :" << ((intface->IsRadioOn())?"ON" : "OFF");
+
+    }
+
+    manager.DeleteInterfaceList(interfaceList);
+
     manager.ConnectWifi();
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));

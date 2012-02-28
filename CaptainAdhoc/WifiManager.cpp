@@ -90,6 +90,40 @@ void WifiManager::UnregisterNotifications()
 
 }
 
+QList<WifiInterface*> * WifiManager::GetInterfaces()
+{
+    QList<WifiInterface*> * intList = new QList<WifiInterface*>();
+    IEnumDot11AdHocInterfaces * interfaces;
+    IDot11AdHocInterface * intface;
+
+    ULONG cnt;
+
+    qDebug() << "Querying Interfaces list ...";
+    HRESULT ans = _adHocManager->GetIEnumDot11AdHocInterfaces(&interfaces);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Retrieving first interface...";
+    interfaces->Next(1,&intface,&cnt);
+
+    while (SUCCEEDED(ans))
+    {
+        WifiInterface * wifi = new WifiInterface(intface);
+        intList->append(wifi);
+        ans = interfaces->Next(1,&intface,&cnt);
+    }
+    return intList;
+
+}
+
+void WifiManager::DeleteInterfaceList(QList<WifiInterface*> * list)
+{
+    foreach(WifiInterface* wifi,*list)
+    {
+        delete wifi;
+    }
+    delete list;
+}
+
 void WifiManager::ConnectWifi()
 {
 
@@ -162,16 +196,16 @@ void WifiManager::ConnectWifi()
 
         qDebug() << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
         qDebug() << "Retrieving connection point for NetworkNotifications... ";
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink,&pConnectionPoint);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         qDebug() << "Registering for notifications... ";
         ans = pConnectionPoint->Advise((IUnknown*) &nSink,&_sinkCookie);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         qDebug() << "Committing the network... ";
         ans = _adHocManager->CommitCreatedNetwork(myNet,false,false);

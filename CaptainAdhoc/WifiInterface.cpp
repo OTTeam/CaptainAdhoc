@@ -12,7 +12,13 @@ QString WifiInterface::GetName()
 {
     LPWSTR name;
     _wifiCard->GetFriendlyName(&name);
-    QString qName = *name;
-    qDebug()<< qName;
+    QString qName = QString::fromWCharArray(name);
     return qName;
+}
+
+bool WifiInterface::IsRadioOn()
+{
+    BOOLEAN ans;
+    _wifiCard->IsRadioOn(&ans);
+    return ans;
 }

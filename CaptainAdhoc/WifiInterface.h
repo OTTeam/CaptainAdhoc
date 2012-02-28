@@ -8,10 +8,11 @@
 class WifiInterface : public QObject
 {
     Q_OBJECT
+public:
 
-    WifiInterface (IDot11AdHocInterface * wifiCard);
-
+    WifiInterface (IDot11AdHocInterface *wifiCard);
     QString GetName();
+    bool IsRadioOn();
 
 private:
 
