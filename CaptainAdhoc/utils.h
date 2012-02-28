@@ -6,6 +6,8 @@
 
 class Client;
 
+#define TRACE
+
 #define PORT_SERVEUR 50855
 #define DISCOVERY_PORT 50854
 

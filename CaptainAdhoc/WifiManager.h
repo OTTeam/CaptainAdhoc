@@ -30,6 +30,7 @@ private:
     ManagerNotificationSink mSink;
     NetworkNotificationSink nSink;
 
+    IDot11AdHocNetwork * myNet;
 };
 
 #endif // WIFIMANAGER_H
