@@ -1,4 +1,7 @@
 #include "WifiManager.h"
+#include "ManagerNotificationSink.h"
+#include "NetworkNotificationSink.h"
+#include "SecuritySettings.h"
 
 #include <windows.h>
 #include <adhoc.h>
@@ -6,216 +9,6 @@
 #include <OCIdl.h>
 
 using namespace std;
-
-
-
-class cManagerSink : public IDot11AdHocManagerNotificationSink
-{
-public:
-    HRESULT STDMETHODCALLTYPE OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork)
-    {
-        LPWSTR pSSID;
-        pIAdHocNetwork->GetSSID(&pSSID);
-        wprintf(L"[ManagerNotif] New network : %s\n", pSSID);
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE OnNetworkRemove(GUID * sig)
-    {
-        printf("[ManagerNotif] network removed\n");
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE OnInterfaceAdd(IDot11AdHocInterface *pIAdHocNetwork)
-    {
-        printf("[ManagerNotif] New interface\n");
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE OnInterfaceRemove(GUID * sig)
-    {
-        printf("[ManagerNotif] interface removed\n");
-        return S_OK;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        return 2;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        return 1;
-    }
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
-    {
-        HRESULT hr = S_OK;
-
-        if (riid == IID_IUnknown)
-        {
-            *ppvObj = (IUnknown *)this;
-        }
-        else if (riid == IID_IDot11AdHocManagerNotificationSink)
-        {
-            *ppvObj = (IDot11AdHocManagerNotificationSink *)this;
-        }
-        else
-        {
-            hr = E_NOINTERFACE;
-            *ppvObj = NULL;
-        }
-
-        return hr;
-    }
-};
-
-class cSink : public QObject, IDot11AdHocNetworkNotificationSink
-{
-signals:
-    void ConnectionStatusChanged(CONNECTION_STATUS);
-
-public:
-
-    cSink(){}
-
-    HRESULT __stdcall OnConnectFail(DOT11_ADHOC_CONNECT_FAIL_REASON reason)
-    {
-        printf("[NetworkNotif] Connection failed : ");
-        switch(reason)
-        {
-        case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-            printf("DOMAIN MISSMATCH\n");
-            break;
-        case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-            printf("PASSPHRASE MISSMATCH\n");
-            break;
-        case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-            printf("OTHER\n");
-            break;
-        default:
-            printf("UNKNOWN\n");
-        }
-
-        return S_OK;
-    }
-
-    HRESULT __stdcall OnStatusChange( DOT11_ADHOC_NETWORK_CONNECTION_STATUS status)
-    {
-        printf("[NetworkNotif] Status changed : ");
-        switch (status)
-        {
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_FORMED:
-            emit ConnectionStatusChanged(FORMED);
-            break;
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTED:
-            emit ConnectionStatusChanged(CONNECTED);
-            break;
-        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_DISCONNECTED:
-            emit ConnectionStatusChanged(DISCONNECTED);
-            break;
-//        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_INVALID:
-//            printf("INVALID\n");
-//            break;
-//        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTING:
-//            printf("CONNECTING\n");
-//            break;
-//        default:
-//            printf("UNKNOWN\n");
-        }
-        return S_OK;
-    }
-
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        return 2;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        return 1;
-    }
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
-    {
-        HRESULT hr = S_OK;
-
-        if (riid == IID_IUnknown)
-        {
-            *ppvObj = (IUnknown *)this;
-        }
-        else if (riid == IID_IDot11AdHocNetworkNotificationSink)
-        {
-            *ppvObj = (IDot11AdHocNetworkNotificationSink *)this;
-        }
-        else
-        {
-            hr = E_NOINTERFACE;
-            *ppvObj = NULL;
-        }
-
-        return hr;
-    }
-};
-
-cSink sink;
-
-class cSecuritySettings : public IDot11AdHocSecuritySettings
-{
-public:
-    cSecuritySettings(){}
-
-    HRESULT __stdcall GetDot11AuthAlgorithm(DOT11_ADHOC_AUTH_ALGORITHM *pAuth)
-    {
-        *pAuth = DOT11_ADHOC_AUTH_ALGO_80211_OPEN;  //WEP
-        //*pAuth = DOT11_ADHOC_AUTH_ALGO_RSNA_PSK;    //WPA2PSK
-        return S_OK;
-    }
-
-    HRESULT __stdcall GetDot11CipherAlgorithm(DOT11_ADHOC_CIPHER_ALGORITHM *pCipher)
-    {
-        *pCipher = DOT11_ADHOC_CIPHER_ALGO_WEP;     //WEP
-        //*pCipher = DOT11_ADHOC_CIPHER_ALGO_CCMP;    //WPA2PSK
-        return S_OK;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        printf("addref!\n");
-        return 2;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        printf("release!\n");
-        return 1;
-    }
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj)
-    {
-        HRESULT hr = S_OK;
-
-        printf("query\n");
-        if (riid == IID_IUnknown)
-        {
-            *ppvObj = (IUnknown *)this;
-        }
-        else if (riid == IID_IDot11AdHocSecuritySettings)
-        {
-            *ppvObj = (IDot11AdHocSecuritySettings *)this;
-        }
-        else
-        {
-            hr = E_NOINTERFACE;
-            *ppvObj = NULL;
-        }
-
-        return hr;
-    }
-};
-
-cSecuritySettings securitySettings;
 
 
 WifiManager::~WifiManager()
@@ -250,7 +43,7 @@ void WifiManager::ConnectWifi()
     cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
-    cManagerSink mSink;
+    ManagerNotificationSink mSink;
     DWORD sinkCookie;
 
     cout << "Registering for notifications... ";
@@ -281,6 +74,7 @@ void WifiManager::ConnectWifi()
         }
     }
 
+    NetworkNotificationSink* sink;
     if (found)
     {
         cout << "Casting NetWork in ConnectionPointContainer... ";
@@ -293,7 +87,7 @@ void WifiManager::ConnectWifi()
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) &sink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) sink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
@@ -322,12 +116,12 @@ void WifiManager::ConnectWifi()
 
         printf("\n");
     }
-
-    if (!found)
+    else
     {
         printf("Creating the network... ");
 
-        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
+        SecuritySettings* securitySettings;
+        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, securitySettings, NULL, &myNet);
         switch (ans)
         {
         case S_OK:
@@ -361,7 +155,7 @@ void WifiManager::ConnectWifi()
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) &sink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) sink,&sinkCookie);
         cout << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         cout << "Committing the network... ";
