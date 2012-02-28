@@ -44,19 +44,19 @@ WifiManager::~WifiManager()
 
 void WifiManager::RegisterNotifications()
 {
-    IConnectionPointContainer  * pConnectionPointContainer;
-    IConnectionPoint * pConnectionPoint;
+    IConnectionPointContainer  * pCPC;
+    IConnectionPoint * pCP;
 
     qDebug() << "Casting AdHocManager in ConnectionPointContainer... ";
-    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
+    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pCPC);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     qDebug() << "Retrieving connection point for AdHocManagerNotifications... ";
-    ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
+    ans = pCPC->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pCP);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     qDebug() << "Registering for notifications... ";
-    ans = pConnectionPoint->Advise((IUnknown*) &_sink, &_sinkCookie);
+    ans = pCP->Advise((IUnknown*) &_sink, &_sinkCookie);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     if (SUCCEEDED(ans))
@@ -71,19 +71,19 @@ void WifiManager::UnregisterNotifications()
     if (!_registered)
         return;
 
-    IConnectionPointContainer  * pConnectionPointContainer;
-    IConnectionPoint * pConnectionPoint;
+    IConnectionPointContainer  * pCPC;
+    IConnectionPoint * pCP;
 
     qDebug() << "Casting AdHocManager in ConnectionPointContainer... ";
-    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
+    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pCPC);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     qDebug() << "Retrieving connection point for AdHocManagerNotifications... ";
-    ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
+    ans = pCPC->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pCP);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     qDebug() << "Unregistering for notifications... ";
-    ans = pConnectionPoint->Unadvise(_sinkCookie);
+    ans = pCP->Unadvise(_sinkCookie);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     _registered = false;
@@ -92,6 +92,7 @@ void WifiManager::UnregisterNotifications()
 
 void WifiManager::ConnectWifi()
 {
+
     IEnumDot11AdHocNetworks * networks = NULL;
     HRESULT ans;
     ULONG cnt;
@@ -120,10 +121,10 @@ void WifiManager::ConnectWifi()
     for (ULONG i = 0; i < cnt; i++)
     {
         network[i]->GetSSID(&ssid);
-        wstring str(ssid);
-        qDebug() << "Network" << i+1 << ":" << *ssid;
+        QString qSSID = QString::fromWCharArray(ssid);
+        qDebug() << "Network" << i+1 << ":" << qSSID;
 
-        if (str == ADHOC_SSID)
+        if (qSSID == ADHOC_SSID)
         {
             found=true;
             myNet = network[i];
@@ -134,71 +135,30 @@ void WifiManager::ConnectWifi()
     {
         qDebug() << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
         qDebug() << "Retrieving connection point for NetworkNotifications... ";
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink,&pConnectionPoint);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         qDebug() << "Registering for notifications... ";
         ans = pConnectionPoint->Advise((IUnknown*) &nSink,&_sinkCookie);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
-        printf("Connecting... ");
+        qDebug() << "Connecting... ";
         ans = myNet->Connect(ADHOC_PWD, 0x54, false, false);
-        switch (ans)
-        {
-        case S_OK:
-            printf("OK");
-            break;
-        case REGDB_E_CLASSNOTREG:
-            printf("REGDB");
-            break;
-        case CLASS_E_NOAGGREGATION:
-            printf("CLASS");
-            break;
-        case E_NOINTERFACE:
-            printf("NOINTERFACE");
-            break;
-        case E_POINTER:
-            printf("POINTER");
-            break;
-        default :
-            printf("%d",ans);
-        }
-
-        printf("\n");
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
     }
     else //Si le reseau n'existe pas, il faut le créer
     {
-        printf("Creating the network... ");
+        qDebug() << "Creating the network... ";
 
         SecuritySettings securitySettings;
-        ans = _adHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
-        switch (ans)
-        {
-        case S_OK:
-            printf("OK");
-            break;
-        case REGDB_E_CLASSNOTREG:
-            printf("REGDB");
-            break;
-        case CLASS_E_NOAGGREGATION:
-            printf("CLASS");
-            break;
-        case E_NOINTERFACE:
-            printf("NOINTERFACE");
-            break;
-        case E_POINTER:
-            printf("POINTER");
-            break;
-        default :
-            printf("%d",ans);
-        }
 
-        printf("\n");
+        ans = _adHocManager->CreateNetwork(W_ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         qDebug() << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
@@ -215,28 +175,7 @@ void WifiManager::ConnectWifi()
 
         qDebug() << "Committing the network... ";
         ans = _adHocManager->CommitCreatedNetwork(myNet,false,false);
-        switch (ans)
-        {
-        case S_OK:
-            printf("OK");
-            break;
-        case REGDB_E_CLASSNOTREG:
-            printf("REGDB");
-            break;
-        case CLASS_E_NOAGGREGATION:
-            printf("CLASS");
-            break;
-        case E_NOINTERFACE:
-            printf("NOINTERFACE");
-            break;
-        case E_POINTER:
-            printf("POINTER");
-            break;
-        default :
-            printf("%d",ans);
-        }
-
-        printf("\n");
+        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
     }
 }
 

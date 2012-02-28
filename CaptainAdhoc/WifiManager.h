@@ -8,7 +8,9 @@
 #include "SecuritySettings.h"
 
 // SSID du reseau :
-#define ADHOC_SSID L"CAPTAIN_ADHOC"
+#define ADHOC_SSID "CAPTAIN_ADHOC"
+#define W_ADHOC_SSID L"CAPTAIN_ADHOC"
+
 // Mot de passe du reseau :
 #define ADHOC_PWD L"archibald1941"
 

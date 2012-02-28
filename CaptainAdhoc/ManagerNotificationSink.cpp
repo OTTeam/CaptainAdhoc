@@ -7,25 +7,29 @@ HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwo
 {
     LPWSTR pSSID;
     pIAdHocNetwork->GetSSID(&pSSID);
-    qDebug() << "[ManagerNotif] New network :" << *pSSID;
+    QString ssid = QString::fromWCharArray(pSSID);
+    qDebug() << "[ManagerNotif] New network :" << ssid;
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkRemove(GUID * sig)
+HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkRemove(GUID *)
 {
-//    printf("[ManagerNotif] network removed\n");
+    qDebug() << "[ManagerNotif] a network was removed";
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceAdd(IDot11AdHocInterface *pIAdHocNetwork)
+HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceAdd(IDot11AdHocInterface *pIAdHocInterface)
 {
-//    printf("[ManagerNotif] New interface\n");
+    LPWSTR pIntName;
+    pIAdHocInterface->GetFriendlyName(&pIntName);
+    QString IntName = QString::fromWCharArray(pIntName);
+    qDebug() << "[ManagerNotif] New interface :" << IntName;
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceRemove(GUID * sig)
+HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnInterfaceRemove(GUID *)
 {
-//    printf("[ManagerNotif] interface removed\n");
+    qDebug() << "[ManagerNotif] an interface was removed";
     return S_OK;
 }
 
