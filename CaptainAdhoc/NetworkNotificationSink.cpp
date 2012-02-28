@@ -1,5 +1,7 @@
 #include "NetworkNotificationSink.h"
 
+#include <QDebug>
+
 
 NetworkNotificationSink::NetworkNotificationSink(){}
 
@@ -25,20 +27,24 @@ HRESULT __stdcall NetworkNotificationSink::OnConnectFail(DOT11_ADHOC_CONNECT_FAI
     return S_OK;
 }
 
-HRESULT __stdcall NetworkNotificationSink::OnStatusChange( DOT11_ADHOC_NETWORK_CONNECTION_STATUS status)
+HRESULT __stdcall NetworkNotificationSink::OnStatusChange(DOT11_ADHOC_NETWORK_CONNECTION_STATUS status)
 {
 //    printf("[NetworkNotif] Status changed : ");
     switch (status)
     {
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_FORMED:
-//        emit ConnectionStatusChanged(FORMED);
+        emit ConnectionStatusChanged(FORMED);
+        qDebug() << "Notification sent : network formed";
         break;
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_CONNECTED:
-//        emit ConnectionStatusChanged(CONNECTED);
+        emit ConnectionStatusChanged(CONNECTED);
+        qDebug() << "Notification sent : connected to network";
         break;
     case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_DISCONNECTED:
-//        emit ConnectionStatusChanged(DISCONNECTED);
+        emit ConnectionStatusChanged(DISCONNECTED);
+        qDebug() << "Notification sent : disconnected from network";
         break;
+
 //        case DOT11_ADHOC_NETWORK_CONNECTION_STATUS_INVALID:
 //            printf("INVALID\n");
 //            break;
@@ -48,6 +54,7 @@ HRESULT __stdcall NetworkNotificationSink::OnStatusChange( DOT11_ADHOC_NETWORK_C
 //        default:
 //            printf("UNKNOWN\n");
     }
+
     return S_OK;
 }
 

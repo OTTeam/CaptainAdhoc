@@ -36,8 +36,8 @@ public slots:
     bool ConnectWifi();     //Connexion au réseau WiFi AdHoc - Retourne vrai si connecté
     bool DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc - Retourne vrai si deconnecté
 
-signals:
-    void ConnectionStatusChanged(CONNECTION_STATUS);
+private slots:
+    void onConnectionStatusChanged(int);
 
 private:
     IDot11AdHocManager * _adHocManager;
