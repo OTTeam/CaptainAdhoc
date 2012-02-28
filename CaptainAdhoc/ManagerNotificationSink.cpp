@@ -1,12 +1,13 @@
 #include "ManagerNotificationSink.h"
+#include <QDebug>
 #include <iostream>
 
 
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork)
 {
-//    LPWSTR pSSID;
-//    pIAdHocNetwork->GetSSID(&pSSID);
-//    wprintf(L"[ManagerNotif] New network : %s\n", pSSID);
+    LPWSTR pSSID;
+    pIAdHocNetwork->GetSSID(&pSSID);
+    qDebug() << "[ManagerNotif] New network :" << *pSSID;
     return S_OK;
 }
 

@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     lbDlSpeed = new QLabel("",this);
 
 
-
+    manager.RegisterNotifications();
     manager.ConnectWifi();
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));

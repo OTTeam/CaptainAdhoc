@@ -12,8 +12,19 @@ using namespace std;
 WifiManager::WifiManager()
 {
 #ifdef TRACE
-    cout << "[CONS] WifiManager" << endl;
+    qDebug() << "[CONS] WifiManager";
 #endif
+
+    _registered = false;
+
+    qDebug() << endl << "Initialising COM Lib... ";
+    HRESULT ans = CoInitialize(NULL);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Creating AdHocManager... ";
+    ans = CoCreateInstance(CLSID_Dot11AdHocManager,NULL,CLSCTX_INPROC_SERVER,IID_IDot11AdHocManager,(LPVOID*) &_adHocManager);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
 }
 
 WifiManager::~WifiManager()
@@ -22,11 +33,65 @@ WifiManager::~WifiManager()
     cout << "[DEST] WifiManager" << endl;
 #endif
     DisconnectWifi();
+
+    UnregisterNotifications();
+
+    qDebug() << "Fermeture de la Lib COM...";
+    CoUninitialize();
+    qDebug() << "Done";
+
+}
+
+void WifiManager::RegisterNotifications()
+{
+    IConnectionPointContainer  * pConnectionPointContainer;
+    IConnectionPoint * pConnectionPoint;
+
+    qDebug() << "Casting AdHocManager in ConnectionPointContainer... ";
+    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Retrieving connection point for AdHocManagerNotifications... ";
+    ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Registering for notifications... ";
+    ans = pConnectionPoint->Advise((IUnknown*) &_sink, &_sinkCookie);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    if (SUCCEEDED(ans))
+    {
+        _registered = true;
+    }
+
+}
+
+void WifiManager::UnregisterNotifications()
+{
+    if (!_registered)
+        return;
+
+    IConnectionPointContainer  * pConnectionPointContainer;
+    IConnectionPoint * pConnectionPoint;
+
+    qDebug() << "Casting AdHocManager in ConnectionPointContainer... ";
+    HRESULT ans = _adHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Retrieving connection point for AdHocManagerNotifications... ";
+    ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Unregistering for notifications... ";
+    ans = pConnectionPoint->Unadvise(_sinkCookie);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    _registered = false;
+
 }
 
 void WifiManager::ConnectWifi()
 {
-    IDot11AdHocManager * AdHocManager = NULL;
     IEnumDot11AdHocNetworks * networks = NULL;
     HRESULT ans;
     ULONG cnt;
@@ -34,32 +99,15 @@ void WifiManager::ConnectWifi()
     IConnectionPointContainer  * pConnectionPointContainer;
     IConnectionPoint * pConnectionPoint;
     LPWSTR ssid;
-    qDebug() << endl << "Initialising COM Lib... ";
-    ans = CoInitialize(NULL);
-    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-    qDebug() << "Creating AdHocManager... ";
-    ans = CoCreateInstance(CLSID_Dot11AdHocManager,NULL,CLSCTX_INPROC_SERVER,IID_IDot11AdHocManager,(void**) &AdHocManager);
-    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-    qDebug() << "Casting AdHocManager in ConnectionPointContainer... ";
-    ans = AdHocManager->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
-    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-    qDebug() << "Retrieving connection point for AdHocManagerNotifications... ";
-    ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocManagerNotificationSink,&pConnectionPoint);
-    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
 
-    DWORD sinkCookie;
 
-    qDebug() << "Registering for notifications... ";
-    ans = pConnectionPoint->Advise((IUnknown*) &mSink, &sinkCookie);
-    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+
 
     qDebug() << "Getting Network list... ";
-    ans = AdHocManager->GetIEnumDot11AdHocNetworks(NULL, &networks);
+    ans = _adHocManager->GetIEnumDot11AdHocNetworks(NULL, &networks);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
     qDebug() << "Extracting Networks... ";
@@ -94,7 +142,7 @@ void WifiManager::ConnectWifi()
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         qDebug() << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
 
@@ -128,7 +176,7 @@ void WifiManager::ConnectWifi()
         printf("Creating the network... ");
 
         SecuritySettings securitySettings;
-        ans = AdHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
+        ans = _adHocManager->CreateNetwork(ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &myNet);
         switch (ans)
         {
         case S_OK:
@@ -162,11 +210,11 @@ void WifiManager::ConnectWifi()
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         qDebug() << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) &nSink,&_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
 
         qDebug() << "Committing the network... ";
-        ans = AdHocManager->CommitCreatedNetwork(myNet,false,false);
+        ans = _adHocManager->CommitCreatedNetwork(myNet,false,false);
         switch (ans)
         {
         case S_OK:
@@ -194,5 +242,6 @@ void WifiManager::ConnectWifi()
 
 void WifiManager::DisconnectWifi()
 {
+
     myNet->Disconnect();
 }

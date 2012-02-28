@@ -19,6 +19,9 @@ public:
     WifiManager();
     ~WifiManager();
 
+    void RegisterNotifications();
+    void UnregisterNotifications();
+
 public slots:
     void ConnectWifi();
     void DisconnectWifi();
@@ -27,8 +30,14 @@ signals:
     void ConnectionStatusChanged(CONNECTION_STATUS);
 
 private:
-    ManagerNotificationSink mSink;
+    IDot11AdHocManager * _adHocManager;
+
+    ManagerNotificationSink _sink;
     NetworkNotificationSink nSink;
+
+    DWORD _sinkCookie;
+
+    bool _registered;
 
     IDot11AdHocNetwork * myNet;
 };
