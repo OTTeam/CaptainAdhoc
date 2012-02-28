@@ -17,7 +17,7 @@ HRESULT __stdcall NetworkNotificationSink::OnConnectFail(DOT11_ADHOC_CONNECT_FAI
     case DOT11_ADHOC_CONNECT_FAIL_OTHER:
 //        printf("OTHER\n");
         break;
-    default:
+//    default:
 //        printf("UNKNOWN\n");
         ;
     }
