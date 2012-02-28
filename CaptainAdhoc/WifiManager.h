@@ -25,23 +25,23 @@ public:
     void UnregisterNotifications();
 
 public slots:
-    void ConnectWifi();
-    void DisconnectWifi();
+    bool ConnectWifi();     //Connexion au réseau WiFi AdHoc - Retourne vrai si connecté
+    bool DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc - Retourne vrai si deconnecté
 
 signals:
     void ConnectionStatusChanged(CONNECTION_STATUS);
 
 private:
     IDot11AdHocManager * _adHocManager;
+    IDot11AdHocNetwork * _network;
 
-    ManagerNotificationSink _sink;
-    NetworkNotificationSink nSink;
+    ManagerNotificationSink _managerSink;
+    NetworkNotificationSink _networkSink;
 
     DWORD _sinkCookie;
 
+    bool _connected;
     bool _registered;
-
-    IDot11AdHocNetwork * myNet;
 };
 
 #endif // WIFIMANAGER_H
