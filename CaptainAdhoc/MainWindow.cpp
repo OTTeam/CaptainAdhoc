@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <iostream>
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -54,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    
+    cout << "[DEST] MainWindow" << endl;
 }
 
 

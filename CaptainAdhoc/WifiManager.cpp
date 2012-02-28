@@ -8,12 +8,19 @@
 
 using namespace std;
 
-WifiManager::WifiManager(){
 
+WifiManager::WifiManager()
+{
+#ifdef trace
+    cout << "[CONS] WifiManager" << endl;
+#endif
 }
 
 WifiManager::~WifiManager()
 {
+#ifdef trace
+    cout << "[DEST] WifiManager" << endl;
+#endif
     DisconnectWifi();
 }
 
@@ -60,7 +67,6 @@ void WifiManager::ConnectWifi()
     printf("Got %d networks\n",cnt);
 
     bool found = false;
-    IDot11AdHocNetwork * myNet;
 
     for (ULONG i = 0; i < cnt; i++)
     {
@@ -75,7 +81,7 @@ void WifiManager::ConnectWifi()
         }
     }
 
-     if (found)
+    if (found) //Si le reseau existe deja
     {
         cout << "Casting NetWork in ConnectionPointContainer... ";
         ans = myNet->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
@@ -116,7 +122,7 @@ void WifiManager::ConnectWifi()
 
         printf("\n");
     }
-    else
+    else //Si le reseau n'existe pas, il faut le créer
     {
         printf("Creating the network... ");
 
@@ -187,5 +193,5 @@ void WifiManager::ConnectWifi()
 
 void WifiManager::DisconnectWifi()
 {
-
+    myNet->Disconnect();
 }
