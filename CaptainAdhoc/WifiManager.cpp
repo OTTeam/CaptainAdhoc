@@ -126,95 +126,122 @@ void WifiManager::DeleteInterfaceList(QList<WifiInterface*> * list)
     delete list;
 }
 
+QList<WifiNetwork*> * WifiManager::GetNetworks()
+{
+    QList<WifiNetwork*> * list = new QList<WifiNetwork*>();
 
+    IEnumDot11AdHocNetworks * networks = NULL;
+    IDot11AdHocNetwork * network;
+
+    HRESULT ans;
+    ULONG cnt;
+
+    qDebug() << "Getting Network list... ";
+    ans = _adHocManager->GetIEnumDot11AdHocNetworks(NULL, &networks);
+    qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+    qDebug() << "Extracting Networks... ";
+    ans = networks->Next(1,&network,&cnt);
+    while (SUCCEEDED(ans))
+    {
+        WifiNetwork * wifi = new WifiNetwork(network);
+        list->append(wifi);
+        ans = networks->Next(1,&network,&cnt);
+    }
+
+    return list;
+
+}
+
+void WifiManager::DeleteNetworkList(QList<WifiNetwork *> * list)
+{
+    foreach(WifiNetwork * net,*list)
+    {
+        delete net;
+    }
+    delete list;
+}
 
 bool WifiManager::ConnectWifi()
 
 {
-    if( !_connected )
-    {
-        IEnumDot11AdHocNetworks * networks = NULL;
-        HRESULT ans;
-        ULONG cnt;
-        IDot11AdHocNetwork * network [10];
-        IConnectionPointContainer  * pConnectionPointContainer;
-        IConnectionPoint * pConnectionPoint;
-        LPWSTR ssid;
+//    if( !_connected )
+//    {
+//        IConnectionPointContainer  * pConnectionPointContainer;
+//        IConnectionPoint * pConnectionPoint;
+//        LPWSTR ssid;
 
 
-        qDebug() << "Getting Network list... ";
-        ans = _adHocManager->GetIEnumDot11AdHocNetworks(NULL, &networks);
-        qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-        qDebug() << "Extracting Networks... ";
-        ans = networks->Next(10,network,&cnt);
-
-        qDebug() << "Got"<< cnt << "networks";
-
-        bool found = false;
-
-        for (ULONG i = 0; i < cnt; i++)
-        {
-            network[i]->GetSSID(&ssid);
-            QString qSSID = QString::fromWCharArray(ssid);
-            qDebug() << "Network" << i+1 << ":" << qSSID;
-
-            if (qSSID == ADHOC_SSID)
-            {
-                found=true;
-                _network = network[i];
-            }
-        }
-
-        if (found) //Si le reseau existe deja
-        {
-            qDebug() << "Casting NetWork in ConnectionPointContainer... ";
-            ans = _network->QueryInterface(IID_IConnectionPointContainer, (void**) &pConnectionPointContainer);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
-            qDebug() << "Retrieving connection point for NetworkNotifications... ";
-            ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-            qDebug() << "Registering for notifications... ";
-            ans = pConnectionPoint->Advise((IUnknown*) &_networkSink, &_sinkCookie);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
-            qDebug() << "Connecting... ";
-            ans = _network->Connect(ADHOC_PWD, 0x54, false, false);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-        }
-        else //Si le reseau n'existe pas, il faut le créer
-        {
-            qDebug() << "Creating the network... ";
+//        qDebug() << "Got"<< cnt << "networks";
 
-            SecuritySettings securitySettings;
+//        bool found = false;
 
-            ans = _adHocManager->CreateNetwork(W_ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &_network);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+//        for (ULONG i = 0; i < cnt; i++)
+//        {
+//            network[i]->GetSSID(&ssid);
+//            QString qSSID = QString::fromWCharArray(ssid);
+//            qDebug() << "Network" << i+1 << ":" << qSSID;
 
-            qDebug() << "Casting NetWork in ConnectionPointContainer... ";
-            ans = _network->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+//            if (qSSID == ADHOC_SSID)
+//            {
+//                found=true;
+//                _network = network[i];
+//            }
+//        }
+
+//        if (found) //Si le reseau existe deja
+//        {
+//            qDebug() << "Casting NetWork in ConnectionPointContainer... ";
+//            ans = _network->QueryInterface(IID_IConnectionPointContainer, (void**) &pConnectionPointContainer);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
 
-            qDebug() << "Retrieving connection point for NetworkNotifications... ";
-            ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+//            qDebug() << "Retrieving connection point for NetworkNotifications... ";
+//            ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
-            qDebug() << "Registering for notifications... ";
-            ans = pConnectionPoint->Advise((IUnknown*) &_networkSink, &_sinkCookie);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+//            qDebug() << "Registering for notifications... ";
+//            ans = pConnectionPoint->Advise((IUnknown*) &_networkSink, &_sinkCookie);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
-            qDebug() << "Committing the network... ";
-            ans = _adHocManager->CommitCreatedNetwork(_network, false, false);
-            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-        }
 
-        _connected = SUCCEEDED(ans);
-    }
+//            qDebug() << "Connecting... ";
+//            ans = _network->Connect(ADHOC_PWD, 0x54, false, false);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+//        }
+//        else //Si le reseau n'existe pas, il faut le créer
+//        {
+//            qDebug() << "Creating the network... ";
+
+//            SecuritySettings securitySettings;
+
+//            ans = _adHocManager->CreateNetwork(W_ADHOC_SSID, ADHOC_PWD, 0x54, NULL, &securitySettings, NULL, &_network);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+//            qDebug() << "Casting NetWork in ConnectionPointContainer... ";
+//            ans = _network->QueryInterface(IID_IConnectionPointContainer,(void**) &pConnectionPointContainer);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+
+
+//            qDebug() << "Retrieving connection point for NetworkNotifications... ";
+//            ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+
+//            qDebug() << "Registering for notifications... ";
+//            ans = pConnectionPoint->Advise((IUnknown*) &_networkSink, &_sinkCookie);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO") << endl;
+
+//            qDebug() << "Committing the network... ";
+//            ans = _adHocManager->CommitCreatedNetwork(_network, false, false);
+//            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+//        }
+
+//        _connected = SUCCEEDED(ans);
+//    }
 
     return _connected;
 }

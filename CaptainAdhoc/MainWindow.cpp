@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     manager.RegisterNotifications();
     QList<WifiInterface*> * interfaceList;
     interfaceList = manager.GetInterfaces();
+    qDebug() << "Got" << interfaceList->count() << "interface(s) :";
     foreach (WifiInterface * intface,*interfaceList)
     {
         qDebug() << "Interface :" << intface->GetName();
@@ -33,6 +34,18 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     manager.DeleteInterfaceList(interfaceList);
+
+    QList<WifiNetwork*> * netList;
+    netList = manager.GetNetworks();
+    qDebug() << "Got" << netList->count() << "network(s) :";
+    foreach (WifiNetwork * net,*netList)
+    {
+        qDebug() << "Network :" << net->GetSSID();
+        net->Connect("bibite");
+    }
+
+    manager.DeleteNetworkList(netList);
+
 
     manager.ConnectWifi();
 

@@ -11,6 +11,7 @@ class WifiInterface : public QObject
 public:
 
     WifiInterface (IDot11AdHocInterface *wifiCard);
+    ~WifiInterface();
     QString GetName();
     bool IsRadioOn();
 

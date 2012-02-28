@@ -7,6 +7,7 @@
 #include "NetworkNotificationSink.h"
 #include "SecuritySettings.h"
 #include "WifiInterface.h"
+#include "WifiNetwork.h"
 
 // SSID du reseau :
 #define ADHOC_SSID "CAPTAIN_ADHOC"
@@ -24,8 +25,12 @@ public:
 
     void RegisterNotifications();
     void UnregisterNotifications();
+
     QList<WifiInterface*> * GetInterfaces();
     void DeleteInterfaceList(QList<WifiInterface*>*);
+
+    QList<WifiNetwork*> * GetNetworks();
+    void DeleteNetworkList(QList<WifiNetwork*>*);
 
 public slots:
     bool ConnectWifi();     //Connexion au réseau WiFi AdHoc - Retourne vrai si connecté

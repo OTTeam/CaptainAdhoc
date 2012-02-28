@@ -8,6 +8,11 @@ WifiInterface::WifiInterface(IDot11AdHocInterface * wifiCard)
     _wifiCard = wifiCard;
 }
 
+WifiInterface::~WifiInterface()
+{
+
+}
+
 QString WifiInterface::GetName()
 {
     LPWSTR name;
