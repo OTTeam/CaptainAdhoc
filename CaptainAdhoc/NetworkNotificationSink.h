@@ -12,6 +12,7 @@ class NetworkNotificationSink : public QObject, public IDot11AdHocNetworkNotific
 
 signals:
     void ConnectionStatusChanged(int);
+    void ConnectionFail(int);
 
 public:
     NetworkNotificationSink();

@@ -41,12 +41,6 @@ public:
     // Création d'un réseau wifi adhoc
     WifiNetwork * CreateWifi(QString ssid, QString pwd);
 
-//public slots:
-//    void ConnectWifi();     //Connexion au réseau WiFi AdHoc
-//    void DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc
-
-//private slots:
-//    void onConnectionStatusChanged(int);
 
 private:
 
