@@ -29,5 +29,7 @@ bool WifiNetwork::Connect(QString password)
 
     ans = _network->Connect(pwd,0x54,false,false);
 
+    delete pwd;
+
     return SUCCEEDED(ans);
 }

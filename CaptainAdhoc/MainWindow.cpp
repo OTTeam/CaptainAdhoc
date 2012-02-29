@@ -38,16 +38,24 @@ MainWindow::MainWindow(QWidget *parent)
     QList<WifiNetwork*> * netList;
     netList = manager.GetNetworks();
     qDebug() << "Got" << netList->count() << "network(s) :";
+    bool found =false;
     foreach (WifiNetwork * net,*netList)
     {
         qDebug() << "Network :" << net->GetSSID();
-        net->Connect("bibite");
+        if (net->GetSSID() == ADHOC_SSID)
+        {
+            net->Connect(ADHOC_PWD);
+            found=true;
+        }
     }
 
     manager.DeleteNetworkList(netList);
 
-
-    manager.ConnectWifi();
+    if (!found)
+    {
+        WifiNetwork * net = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
+        delete net;
+    }
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
     connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
