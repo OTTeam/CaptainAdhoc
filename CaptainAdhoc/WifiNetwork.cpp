@@ -8,13 +8,18 @@
 
 WifiNetwork::WifiNetwork(IDot11AdHocNetwork * network)
 {
+#ifdef TRACE
+    qDebug() << "[CONS] WifiNetwork";
+#endif
     _network = network;
     _registered = false;
 }
 
 WifiNetwork::~WifiNetwork()
 {
-
+#ifdef TRACE
+    qDebug() << "[DEST] WifiNetwork";
+#endif
 }
 
 QString WifiNetwork::GetSSID()

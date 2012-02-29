@@ -10,6 +10,9 @@ class ManagerNotificationSink : public QObject, public IDot11AdHocManagerNotific
     Q_OBJECT
 
 public:
+    ManagerNotificationSink();
+    ~ManagerNotificationSink();
+
     HRESULT STDMETHODCALLTYPE OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork);
 
     HRESULT STDMETHODCALLTYPE OnNetworkRemove(GUID * sig);
@@ -19,9 +22,7 @@ public:
     HRESULT STDMETHODCALLTYPE OnInterfaceRemove(GUID * sig);
 
     ULONG STDMETHODCALLTYPE AddRef();
-
     ULONG STDMETHODCALLTYPE Release();
-
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj);
 
 signals:
