@@ -56,6 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     cout << "[DEST] MainWindow" << endl;
+    _network->Disconnect();
+    delete _network;
 }
 
 void MainWindow::ConnectWifi()
@@ -82,7 +84,8 @@ void MainWindow::ConnectWifi()
         qDebug() << "Network :" << net->GetSSID();
         if (net->GetSSID() == ADHOC_SSID)
         {
-            net->Connect(ADHOC_PWD);
+            _network = net;
+            _network->Connect(ADHOC_PWD);
             found=true;
         }
     }
@@ -91,10 +94,11 @@ void MainWindow::ConnectWifi()
 
     if (!found)
     {
-        WifiNetwork * net = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
-        delete net;
+        _network = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
     }
 
+    _network->RegisterNotifications();
+    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
 }
 
 
@@ -141,4 +145,20 @@ void MainWindow::UpdateDlSpeed(int bytesPerSec)
     }
 
     lbDlSpeed->setText(text);
+}
+
+void MainWindow::onConnectionStatusChanged(int status)
+{
+    switch (status)
+    {
+    case FORMED:
+        qDebug() << "Notification received : network formed";
+        break;
+    case CONNECTED:
+        qDebug() << "Notification received : connected to network";
+        break;
+    case DISCONNECTED:
+        qDebug() << "Notification received : disconnected from network";
+        break;
+    }
 }

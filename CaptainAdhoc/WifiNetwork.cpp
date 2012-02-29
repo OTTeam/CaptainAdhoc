@@ -48,6 +48,7 @@ bool WifiNetwork::Connect(QString password)
 bool WifiNetwork::Disconnect()
 {
     HRESULT ans;
+    UnregisterNotifications();
     ans = _network->Disconnect();
     return SUCCEEDED(ans);
 }
