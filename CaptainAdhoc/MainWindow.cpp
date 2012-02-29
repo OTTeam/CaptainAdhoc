@@ -185,3 +185,19 @@ void MainWindow::onConnectionStatusChanged(int status)
         break;
     }
 }
+
+void MainWindow::onConnectionFail(int reason)
+{
+    switch(reason)
+    {
+    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
+        qDebug() << "Notification received : connection fail (domain mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
+        qDebug() << "Notification received : connection fail (pwd mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
+        qDebug() << "Notification received : connection fail";
+        break;
+    }
+}

@@ -30,6 +30,7 @@ private slots:
     void UpdateProgress(int);
     void UpdateDlSpeed(int);
     void onConnectionStatusChanged(int);
+    void onConnectionFail(int);
 
 private:
     QLineEdit *address;
