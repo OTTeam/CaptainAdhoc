@@ -21,6 +21,7 @@ public:
 signals:
     void InitiateConnection(QHostAddress);
 private slots:
+    void ConnectWifi();
     void ConnectClicked();
     void HelloClicked();
     void UpdateClientsNumber(int);

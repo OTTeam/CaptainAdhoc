@@ -21,7 +21,45 @@ MainWindow::MainWindow(QWidget *parent)
     progressBar->setMaximum(100);
     lbDlSpeed = new QLabel("",this);
 
+    ConnectWifi();
 
+
+    connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
+    connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
+    QVBoxLayout *layout = new QVBoxLayout(this);
+
+    layout->addWidget(lbNbClients);
+    layout->addWidget(address);
+    layout->addWidget(btconnect);
+    layout->addWidget(sendHello);
+
+
+    QHBoxLayout *dlLayout = new QHBoxLayout();
+
+    dlLayout->addWidget(progressBar);
+    dlLayout->addWidget(lbDlSpeed);
+
+    layout->addLayout(dlLayout);
+    this->setLayout(layout);
+
+    /*
+ * Création du gestionnaire de clients
+*/
+    gestionnaire = new GestionClients(this);
+
+    connect(this,SIGNAL(InitiateConnection(QHostAddress)),gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
+    connect(gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
+    connect(gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
+    connect(gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
+}
+
+MainWindow::~MainWindow()
+{
+    cout << "[DEST] MainWindow" << endl;
+}
+
+void MainWindow::ConnectWifi()
+{
     manager.RegisterNotifications();
     QList<WifiInterface*> * interfaceList;
     interfaceList = manager.GetInterfaces();
@@ -57,38 +95,6 @@ MainWindow::MainWindow(QWidget *parent)
         delete net;
     }
 
-    connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
-    connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
-    QVBoxLayout *layout = new QVBoxLayout(this);
-
-    layout->addWidget(lbNbClients);
-    layout->addWidget(address);
-    layout->addWidget(btconnect);
-    layout->addWidget(sendHello);
-
-
-    QHBoxLayout *dlLayout = new QHBoxLayout();
-
-    dlLayout->addWidget(progressBar);
-    dlLayout->addWidget(lbDlSpeed);
-
-    layout->addLayout(dlLayout);
-    this->setLayout(layout);
-
-    /*
- * Création du gestionnaire de clients
-*/
-    gestionnaire = new GestionClients(this);
-
-    connect(this,SIGNAL(InitiateConnection(QHostAddress)),gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
-    connect(gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
-    connect(gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
-    connect(gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
-}
-
-MainWindow::~MainWindow()
-{
-    cout << "[DEST] MainWindow" << endl;
 }
 
 

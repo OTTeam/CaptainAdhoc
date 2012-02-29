@@ -12,8 +12,10 @@ public:
 
     WifiInterface (IDot11AdHocInterface *wifiCard);
     ~WifiInterface();
+
     QString GetName();
     bool IsRadioOn();
+    int GetStatus();
 
 private:
 
