@@ -17,7 +17,7 @@ WifiNetwork::WifiNetwork(IDot11AdHocNetwork * network)
 
 WifiNetwork::~WifiNetwork()
 {
-    delete _network;
+
 }
 
 QString WifiNetwork::GetSSID()
