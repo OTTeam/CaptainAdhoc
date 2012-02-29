@@ -11,8 +11,8 @@ WifiNetwork::WifiNetwork(IDot11AdHocNetwork * network)
     _network = network;
     _registered = false;
 
-    connect( &_networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
-    connect( &_networkSink, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)) );
+    connect( &_networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
+    connect( &_networkSink, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
 }
 
 WifiNetwork::~WifiNetwork()
@@ -108,34 +108,34 @@ void WifiNetwork::UnregisterNotifications()
 }
 
 
-void WifiNetwork::onConnectionStatusChanged(int status)
-{
-    switch (status)
-    {
-    case FORMED:
-        qDebug() << "Notification received : network formed";
-        break;
-    case CONNECTED:
-        qDebug() << "Notification received : connected to network";
-        break;
-    case DISCONNECTED:
-        qDebug() << "Notification received : disconnected from network";
-        break;
-    }
-}
+//void WifiNetwork::onConnectionStatusChanged(int status)
+//{
+//    switch (status)
+//    {
+//    case FORMED:
+//        qDebug() << "Notification received : network formed";
+//        break;
+//    case CONNECTED:
+//        qDebug() << "Notification received : connected to network";
+//        break;
+//    case DISCONNECTED:
+//        qDebug() << "Notification received : disconnected from network";
+//        break;
+//    }
+//}
 
-void WifiNetwork::onConnectionFail(int reason)
-{
-    switch(reason)
-    {
-    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-        qDebug() << "Notification received : connection fail (domain mismatch)";
-        break;
-    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-        qDebug() << "Notification received : connection fail (pwd mismatch)";
-        break;
-    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-        qDebug() << "Notification received : connection fail";
-        break;
-    }
-}
+//void WifiNetwork::onConnectionFail(int reason)
+//{
+//    switch(reason)
+//    {
+//    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
+//        qDebug() << "Notification received : connection fail (domain mismatch)";
+//        break;
+//    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
+//        qDebug() << "Notification received : connection fail (pwd mismatch)";
+//        break;
+//    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
+//        qDebug() << "Notification received : connection fail";
+//        break;
+//    }
+//}

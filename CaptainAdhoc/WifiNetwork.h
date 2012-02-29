@@ -11,7 +11,6 @@ class WifiNetwork : public QObject
     Q_OBJECT
 
 public:
-
     WifiNetwork (IDot11AdHocNetwork *);
     ~WifiNetwork();
 
@@ -30,9 +29,13 @@ private:
 
     bool _registered;
 
-private slots:
-    void onConnectionStatusChanged(int);
-    void onConnectionFail(int);
+//private slots:
+//    void onConnectionStatusChanged(int);
+//    void onConnectionFail(int);
+
+signals:
+    void ConnectionStatusChanged(int);
+    void ConnectionFail(int);
 
 };
 
