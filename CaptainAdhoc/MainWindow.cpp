@@ -7,7 +7,9 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-
+#ifdef TRACE
+    qDebug() << "[CONS] MainWindow";
+#endif
     /*
  * Mise en place de l'UI
  */
@@ -55,7 +57,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    cout << "[DEST] MainWindow" << endl;
+#ifdef TRACE
+    qDebug() << "[DEST] MainWindow";
+#endif
     _network->Disconnect();
     delete _network;
 }
