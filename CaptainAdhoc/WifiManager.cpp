@@ -163,8 +163,7 @@ void WifiManager::DeleteNetworkList(QList<WifiNetwork *> * list)
     delete list;
 }
 
-bool WifiManager::ConnectWifi()
-
+void WifiManager::ConnectWifi()
 {
 //    if( !_connected )
 //    {
@@ -240,14 +239,10 @@ bool WifiManager::ConnectWifi()
 //            ans = _adHocManager->CommitCreatedNetwork(_network, false, false);
 //            qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 //        }
-
-//        _connected = SUCCEEDED(ans);
 //    }
-
-    return _connected;
 }
 
-bool WifiManager::DisconnectWifi()
+void WifiManager::DisconnectWifi()
 {
     if(_connected)
     {
@@ -271,10 +266,7 @@ bool WifiManager::DisconnectWifi()
         qDebug() << "Disconnecting... ";
         ans = _network->Disconnect();
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-        _connected = FAILED(ans);
     }
-
-    return !_connected;
 }
 
 void WifiManager::onConnectionStatusChanged(int status)

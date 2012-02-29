@@ -33,8 +33,8 @@ public:
     void DeleteNetworkList(QList<WifiNetwork*>*);
 
 public slots:
-    bool ConnectWifi();     //Connexion au réseau WiFi AdHoc - Retourne vrai si connecté
-    bool DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc - Retourne vrai si deconnecté
+    void ConnectWifi();     //Connexion au réseau WiFi AdHoc
+    void DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc
 
 private slots:
     void onConnectionStatusChanged(int);
