@@ -104,6 +104,11 @@ void MainWindow::ConnectWifi()
         }
     }
 
+    if (found)
+    {
+        netList->removeOne(_network);
+    }
+
     manager.DeleteNetworkList(netList);
 
     if (!found)
