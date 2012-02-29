@@ -3,7 +3,19 @@
 #include <QDebug>
 
 
-NetworkNotificationSink::NetworkNotificationSink(){}
+NetworkNotificationSink::NetworkNotificationSink()
+{
+#ifdef TRACE
+    qDebug() << "[CONS] NetworkNotificationSink";
+#endif
+}
+
+NetworkNotificationSink::~NetworkNotificationSink()
+{
+#ifdef TRACE
+    qDebug() << "[DEST] NetworkNotificationSink";
+#endif
+}
 
 HRESULT __stdcall NetworkNotificationSink::OnConnectFail(DOT11_ADHOC_CONNECT_FAIL_REASON reason)
 {

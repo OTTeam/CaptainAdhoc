@@ -3,6 +3,20 @@
 #include <iostream>
 
 
+ManagerNotificationSink::ManagerNotificationSink()
+{
+#ifdef TRACE
+    qDebug() << "[CONS] ManagerNotificationSink";
+#endif
+}
+
+ManagerNotificationSink::~ManagerNotificationSink()
+{
+#ifdef TRACE
+    qDebug() << "[DEST] ManagerNotificationSink";
+#endif
+}
+
 HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork)
 {
     LPWSTR pSSID;

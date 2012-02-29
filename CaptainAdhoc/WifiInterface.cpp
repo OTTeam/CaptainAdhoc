@@ -6,12 +6,17 @@
 
 WifiInterface::WifiInterface(IDot11AdHocInterface * wifiCard)
 {
+#ifdef TRACE
+    qDebug() << "[CONS] WifiInterface";
+#endif
     _wifiCard = wifiCard;
 }
 
 WifiInterface::~WifiInterface()
 {
-
+#ifdef TRACE
+    qDebug() << "[DEST] WifiInterface";
+#endif
 }
 
 QString WifiInterface::GetName()
