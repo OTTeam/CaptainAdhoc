@@ -117,8 +117,8 @@ void MainWindow::ConnectWifi()
 
     if (!found)
     {
-        _network->RegisterNotifications();
         _network = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
+        _network->RegisterNotifications();
     }
 
     connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
