@@ -166,11 +166,11 @@ WifiNetwork * WifiManager::CreateWifi(QString SSID, QString password)
     SecuritySettings securitySettings;
     HRESULT ans;
 
-    LPWSTR ssid = new WCHAR[SSID.length()+1];
+    WCHAR ssid [50];
     SSID.toWCharArray(ssid);
     ssid[SSID.length()]=NULL;
 
-    LPWSTR pwd = new WCHAR[password.length()+1];
+    WCHAR pwd [50];
     password.toWCharArray(pwd);
     pwd[password.length()]=NULL;
 
