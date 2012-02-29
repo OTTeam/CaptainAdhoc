@@ -98,6 +98,7 @@ void MainWindow::ConnectWifi()
         if (net->GetSSID() == ADHOC_SSID)
         {
             _network = net;
+            _network->RegisterNotifications();
             _network->Connect(ADHOC_PWD);
             found=true;
         }
@@ -107,10 +108,10 @@ void MainWindow::ConnectWifi()
 
     if (!found)
     {
+        _network->RegisterNotifications();
         _network = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
     }
 
-    _network->RegisterNotifications();
     connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
 }
 
