@@ -20,6 +20,8 @@ WifiNetwork::~WifiNetwork()
 #ifdef TRACE
     qDebug() << "[DEST] WifiNetwork";
 #endif
+    Disconnect();
+    UnregisterNotifications();
 }
 
 QString WifiNetwork::GetSSID()
@@ -48,7 +50,6 @@ bool WifiNetwork::Connect(QString password)
 bool WifiNetwork::Disconnect()
 {
     HRESULT ans;
-    UnregisterNotifications();
     ans = _network->Disconnect();
     return SUCCEEDED(ans);
 }

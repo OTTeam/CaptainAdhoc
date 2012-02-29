@@ -60,7 +60,6 @@ MainWindow::~MainWindow()
 #ifdef TRACE
     qDebug() << "[DEST] MainWindow";
 #endif
-    _network->Disconnect();
     delete _network;
 }
 
