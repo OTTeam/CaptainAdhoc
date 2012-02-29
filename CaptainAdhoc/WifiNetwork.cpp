@@ -10,14 +10,11 @@ WifiNetwork::WifiNetwork(IDot11AdHocNetwork * network)
 {
     _network = network;
     _registered = false;
-
-    connect( &_networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
-    connect( &_networkSink, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
 }
 
 WifiNetwork::~WifiNetwork()
 {
-
+    delete _network;
 }
 
 QString WifiNetwork::GetSSID()
@@ -59,6 +56,10 @@ void WifiNetwork::RegisterNotifications()
         IConnectionPointContainer  * pConnectionPointContainer;
         IConnectionPoint * pConnectionPoint;
 
+        _networkSink = new NetworkNotificationSink();
+        connect( _networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
+        connect( _networkSink, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
+
         qDebug() << "Casting NetWork in ConnectionPointContainer... ";
         ans = _network->QueryInterface(IID_IConnectionPointContainer, (void**) &pConnectionPointContainer);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
@@ -68,7 +69,7 @@ void WifiNetwork::RegisterNotifications()
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         qDebug() << "Registering for notifications... ";
-        ans = pConnectionPoint->Advise((IUnknown*) &_networkSink, &_sinkCookie);
+        ans = pConnectionPoint->Advise((IUnknown*) _networkSink, &_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
         if (SUCCEEDED(ans))
@@ -98,6 +99,8 @@ void WifiNetwork::UnregisterNotifications()
         qDebug() << "Unregistering for notifications... ";
         ans = pConnectionPoint->Unadvise(_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
+
+        delete _networkSink;
 
         if (SUCCEEDED(ans))
         {

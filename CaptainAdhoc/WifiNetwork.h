@@ -24,7 +24,7 @@ public:
 
 private:
     IDot11AdHocNetwork * _network;
-    NetworkNotificationSink _networkSink;
+    NetworkNotificationSink * _networkSink;
     DWORD _sinkCookie;
 
     bool _registered;
