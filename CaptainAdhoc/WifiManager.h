@@ -36,16 +36,11 @@ public slots:
     void ConnectWifi();     //Connexion au réseau WiFi AdHoc
     void DisconnectWifi();  //Déconnexion au réseau WiFi AdHoc
 
-private slots:
-    void onConnectionStatusChanged(int);
-
 private:
     IDot11AdHocManager * _adHocManager;
     IDot11AdHocNetwork * _network;
 
     ManagerNotificationSink _managerSink;
-    NetworkNotificationSink _networkSink;
-
     DWORD _sinkCookie;
 
     bool _connected;

@@ -8,7 +8,7 @@ HRESULT STDMETHODCALLTYPE ManagerNotificationSink::OnNetworkAdd(IDot11AdHocNetwo
     LPWSTR pSSID;
     pIAdHocNetwork->GetSSID(&pSSID);
     QString ssid = QString::fromWCharArray(pSSID);
-    qDebug() << "[ManagerNotif] New network :" << ssid;
+    qDebug() << "[ManagerNotif] New network : " << ssid;
     emit NetworkAdded();
     return S_OK;
 }

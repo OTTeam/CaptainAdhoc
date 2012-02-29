@@ -4,6 +4,7 @@
 #include <QObject>
 #include <Windows.h>
 #include <adhoc.h>
+#include "NetworkNotificationSink.h"
 
 class WifiNetwork : public QObject
 {
@@ -15,11 +16,23 @@ public:
     ~WifiNetwork();
 
     bool Connect(QString password);
+    bool Disconnect();
+
+    void RegisterNotifications();
+    void UnregisterNotifications();
 
     QString GetSSID();
 
 private:
     IDot11AdHocNetwork * _network;
+    NetworkNotificationSink _networkSink;
+    DWORD _sinkCookie;
+
+    bool _registered;
+
+private slots:
+    void onConnectionStatusChanged(int);
+    void onConnectionFail(int);
 
 };
 
