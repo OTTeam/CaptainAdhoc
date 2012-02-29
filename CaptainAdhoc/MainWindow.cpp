@@ -70,6 +70,19 @@ void MainWindow::ConnectWifi()
     {
         qDebug() << "Interface :" << intface->GetName();
         qDebug() << "Radio :" << ((intface->IsRadioOn())?"ON" : "OFF");
+        switch(intface->GetStatus())
+        {
+        case CONNECTED:
+            qDebug() << "Status : Connecté";
+            intface->DisconnectWifi();
+            break;
+        case FORMED:
+            qDebug() << "Status : En attente";
+            break;
+        case DISCONNECTED:
+            qDebug() << "Status : Déconnecté";
+            break;
+        }
 
     }
 

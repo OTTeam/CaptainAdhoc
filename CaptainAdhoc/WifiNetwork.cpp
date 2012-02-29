@@ -30,15 +30,13 @@ QString WifiNetwork::GetSSID()
 
 bool WifiNetwork::Connect(QString password)
 {
-    LPWSTR pwd = new WCHAR(password.length()+1);
+    WCHAR pwd[40];
     password.toWCharArray(pwd);
     pwd[password.length()] = NULL;
 
     qDebug() << "Connecting... ";
     HRESULT ans = _network->Connect(pwd, 0x54, false, false);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
-    delete pwd;
 
     return SUCCEEDED(ans);
 }

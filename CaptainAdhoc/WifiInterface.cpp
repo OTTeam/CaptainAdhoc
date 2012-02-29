@@ -46,3 +46,25 @@ int WifiInterface::GetStatus()
     }
 
 }
+
+bool WifiInterface::DisconnectWifi()
+{
+    IDot11AdHocNetwork * net;
+    HRESULT ans = _wifiCard->GetActiveNetwork(&net);
+    if (FAILED(ans))
+    {
+        qDebug() << "Can't get an active network for the interface" << GetName();
+        return false;
+    }
+
+    ans = net->Disconnect();
+    if (FAILED(ans))
+    {
+        qDebug() << "Disconnect call on the network failed";
+        return false;
+    }
+
+    qDebug() << "Successfully disconnected";
+    return true;
+
+}

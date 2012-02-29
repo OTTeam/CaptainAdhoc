@@ -17,6 +17,8 @@ public:
     bool IsRadioOn();
     int GetStatus();
 
+    bool DisconnectWifi();
+
 private:
 
     IDot11AdHocInterface * _wifiCard;
