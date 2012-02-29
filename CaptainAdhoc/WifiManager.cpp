@@ -171,12 +171,7 @@ void WifiManager::ConnectWifi()
 //        IConnectionPoint * pConnectionPoint;
 //        LPWSTR ssid;
 
-
-
-
-
-
-//        qDebug() << "Got"<< cnt << "networks";
+//        qDebug() << "Got " << cnt << " networks";
 
 //        bool found = false;
 
