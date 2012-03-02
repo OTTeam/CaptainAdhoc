@@ -11,7 +11,7 @@ class ManagerNotificationSink : public QObject, public IDot11AdHocManagerNotific
 
 public:
     ManagerNotificationSink();
-    ~ManagerNotificationSink();
+    virtual ~ManagerNotificationSink();
 
     HRESULT STDMETHODCALLTYPE OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork);
 

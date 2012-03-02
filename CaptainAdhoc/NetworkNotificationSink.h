@@ -4,7 +4,9 @@
 #include <windows.h>
 #include <adhoc.h>
 #include <QObject>
-#include "utils.h"
+
+enum CONNECTION_STATUS  { FORMED, CONNECTED, DISCONNECTED };
+enum CONNECTION_FAIL    { DOMAIN_MISMATCH, PWD_MISMATCH, OTHER };
 
 class NetworkNotificationSink : public QObject, public IDot11AdHocNetworkNotificationSink
 {
@@ -16,7 +18,7 @@ signals:
 
 public:
     NetworkNotificationSink();
-    ~NetworkNotificationSink();
+    virtual ~NetworkNotificationSink();
 
     HRESULT __stdcall OnConnectFail(DOT11_ADHOC_CONNECT_FAIL_REASON reason);
 

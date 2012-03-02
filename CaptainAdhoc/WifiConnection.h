@@ -1,0 +1,4 @@
+#ifndef WIFICONNECTION_H
+#define WIFICONNECTION_H
+
+#endif // WIFICONNECTION_H

@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     NetworkNotificationSink.cpp \
     SecuritySettings.cpp \
     WifiInterface.cpp \
-    WifiNetwork.cpp
+    WifiNetwork.cpp \
+    WifiConnection.cpp
 
 HEADERS  += MainWindow.h \
     ServeurTCP.h \
@@ -34,7 +35,8 @@ HEADERS  += MainWindow.h \
     NetworkNotificationSink.h \
     SecuritySettings.h \
     WifiInterface.h \
-    WifiNetwork.h
+    WifiNetwork.h \
+    WifiConnection.h
 
 
 win32: LIBS += -L"C:/Program Files/Microsoft SDKs/Windows/v7.1/Lib/" -lwlanapi

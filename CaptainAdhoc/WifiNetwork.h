@@ -12,13 +12,13 @@ class WifiNetwork : public QObject
 
 public:
     WifiNetwork (IDot11AdHocNetwork *);
-    ~WifiNetwork();
+    virtual ~WifiNetwork();
 
     bool Connect(QString password);
     bool Disconnect();
 
-    void RegisterNotifications();
-    void UnregisterNotifications();
+    void RegisterNetworkNotifications();
+    void UnregisterNetworkNotifications();
 
     QString GetSSID();
 
@@ -26,12 +26,7 @@ private:
     IDot11AdHocNetwork * _network;
     NetworkNotificationSink * _networkSink;
     DWORD _sinkCookie;
-
     bool _registered;
-
-//private slots:
-//    void onConnectionStatusChanged(int);
-//    void onConnectionFail(int);
 
 signals:
     void ConnectionStatusChanged(int);

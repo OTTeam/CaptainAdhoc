@@ -2,20 +2,11 @@
 #define WIFIMANAGER_H
 
 #include <QObject>
-#include "utils.h"
 #include "ManagerNotificationSink.h"
 #include "NetworkNotificationSink.h"
 #include "SecuritySettings.h"
 #include "WifiInterface.h"
 #include "WifiNetwork.h"
-
-// SSID du reseau :
-#define ADHOC_SSID "CAPTAIN_ADHOC"
-#define W_ADHOC_SSID L"CAPTAIN_ADHOC"
-
-// Mot de passe du reseau :
-#define ADHOC_PWD "archibald1941"
-#define W_ADHOC_PWD L"archibald1941"
 
 class WifiManager : public QObject
 {
@@ -24,7 +15,7 @@ public:
 
     // Constructeur et destructeur
     WifiManager();
-    ~WifiManager();
+    virtual ~WifiManager();
 
     // Gestion des notifications
     void RegisterNotifications();

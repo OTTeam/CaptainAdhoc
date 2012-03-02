@@ -21,8 +21,9 @@ WifiNetwork::~WifiNetwork()
     qDebug() << "[DEST] WifiNetwork";
 #endif
     Disconnect();
-    UnregisterNotifications();
+    UnregisterNetworkNotifications();
 }
+
 
 QString WifiNetwork::GetSSID()
 {
@@ -32,11 +33,15 @@ QString WifiNetwork::GetSSID()
     return ssid;
 }
 
+
 bool WifiNetwork::Connect(QString password)
 {
-    WCHAR pwd[40];
+//    WCHAR pwd[40];
+//    password.toWCharArray(pwd);
+//    pwd[password.length()] = NULL;
+
+    WCHAR pwd[password.length()];
     password.toWCharArray(pwd);
-    pwd[password.length()] = NULL;
 
     qDebug() << "Connecting... ";
     HRESULT ans = _network->Connect(pwd, 0x54, false, false);
@@ -46,7 +51,6 @@ bool WifiNetwork::Connect(QString password)
 }
 
 
-
 bool WifiNetwork::Disconnect()
 {
     HRESULT ans;
@@ -54,7 +58,7 @@ bool WifiNetwork::Disconnect()
     return SUCCEEDED(ans);
 }
 
-void WifiNetwork::RegisterNotifications()
+void WifiNetwork::RegisterNetworkNotifications()
 {
     if (!_registered)
     {
@@ -85,7 +89,8 @@ void WifiNetwork::RegisterNotifications()
     }
 }
 
-void WifiNetwork::UnregisterNotifications()
+
+void WifiNetwork::UnregisterNetworkNotifications()
 {
     if (_registered)
     {
@@ -114,36 +119,3 @@ void WifiNetwork::UnregisterNotifications()
         }
     }
 }
-
-
-//void WifiNetwork::onConnectionStatusChanged(int status)
-//{
-//    switch (status)
-//    {
-//    case FORMED:
-//        qDebug() << "Notification received : network formed";
-//        break;
-//    case CONNECTED:
-//        qDebug() << "Notification received : connected to network";
-//        break;
-//    case DISCONNECTED:
-//        qDebug() << "Notification received : disconnected from network";
-//        break;
-//    }
-//}
-
-//void WifiNetwork::onConnectionFail(int reason)
-//{
-//    switch(reason)
-//    {
-//    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-//        qDebug() << "Notification received : connection fail (domain mismatch)";
-//        break;
-//    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-//        qDebug() << "Notification received : connection fail (pwd mismatch)";
-//        break;
-//    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-//        qDebug() << "Notification received : connection fail";
-//        break;
-//    }
-//}

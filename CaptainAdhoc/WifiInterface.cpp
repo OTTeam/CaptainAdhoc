@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <Windows.h>
 #include <adhoc.h>
-#include "utils.h"
+#include "NetworkNotificationSink.h"
 
 WifiInterface::WifiInterface(IDot11AdHocInterface * wifiCard)
 {

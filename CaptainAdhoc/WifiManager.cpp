@@ -24,7 +24,6 @@ WifiManager::WifiManager()
     qDebug() << "Creating AdHocManager... ";
     ans = CoCreateInstance(CLSID_Dot11AdHocManager, NULL, CLSCTX_INPROC_SERVER, IID_IDot11AdHocManager, (LPVOID*) &_adHocManager);
     qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
-
 }
 
 WifiManager::~WifiManager()
