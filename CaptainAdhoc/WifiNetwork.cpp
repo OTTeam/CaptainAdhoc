@@ -36,12 +36,9 @@ QString WifiNetwork::GetSSID()
 
 bool WifiNetwork::Connect(QString password)
 {
-//    WCHAR pwd[40];
-//    password.toWCharArray(pwd);
-//    pwd[password.length()] = NULL;
-
-    WCHAR pwd[password.length()];
+    WCHAR pwd[40];
     password.toWCharArray(pwd);
+    pwd[password.length()] = NULL;
 
     qDebug() << "Connecting... ";
     HRESULT ans = _network->Connect(pwd, 0x54, false, false);
