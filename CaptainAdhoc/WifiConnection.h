@@ -12,8 +12,9 @@ public:
     WifiConnection();
     virtual ~WifiConnection();
 
+public slots:
     void Connect();
-    bool Disconnect();
+    void Disconnect();
 
 private:
     WifiManager * _manager;

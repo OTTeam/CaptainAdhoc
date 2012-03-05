@@ -40,7 +40,6 @@ void WifiConnection::Connect()
             qDebug() << "Status : Déconnecté";
             break;
         }
-
     }
 
     _manager->DeleteInterfaceList(interfaceList);
@@ -77,7 +76,7 @@ void WifiConnection::Connect()
     connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
 }
 
-bool WifiConnection::Disconnect()
+void WifiConnection::Disconnect()
 {
-    return _network->Disconnect();
+    _network->Disconnect();
 }
