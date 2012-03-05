@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QLabel>
+#include "WifiConnection.h"
 
 #include "GestionClients.h"
 
@@ -19,22 +20,26 @@ public:
 
 signals:
     void InitiateConnection(QHostAddress);
+
 private slots:
-    void ConnectClicked();
     void HelloClicked();
     void UpdateClientsNumber(int);
     void UpdateProgress(int);
-
     void UpdateDlSpeed(int);
+    void onConnectionStatusChanged(int);
+    void onConnectionFail(int);
+
 private:
     QLineEdit *address;
     QPushButton *btconnect;
+    QPushButton *btdisconnect;
     QPushButton *sendHello;
     QProgressBar *progressBar;
     QLabel *lbNbClients;
     QLabel *lbDlSpeed;
 
-    GestionClients *gestionnaire;
+    GestionClients *_gestionnaire;
+    WifiConnection *_wifi;
 };
 
 #endif // MAINWINDOW_H

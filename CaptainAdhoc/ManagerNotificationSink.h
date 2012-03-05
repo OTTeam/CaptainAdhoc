@@ -3,10 +3,16 @@
 
 #include <windows.h>
 #include <adhoc.h>
+#include <QObject>
 
-class ManagerNotificationSink : public IDot11AdHocManagerNotificationSink
+class ManagerNotificationSink : public QObject, public IDot11AdHocManagerNotificationSink
 {
+    Q_OBJECT
+
 public:
+    ManagerNotificationSink();
+    virtual ~ManagerNotificationSink();
+
     HRESULT STDMETHODCALLTYPE OnNetworkAdd(IDot11AdHocNetwork *pIAdHocNetwork);
 
     HRESULT STDMETHODCALLTYPE OnNetworkRemove(GUID * sig);
@@ -16,10 +22,14 @@ public:
     HRESULT STDMETHODCALLTYPE OnInterfaceRemove(GUID * sig);
 
     ULONG STDMETHODCALLTYPE AddRef();
-
     ULONG STDMETHODCALLTYPE Release();
-
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, PVOID *ppvObj);
+
+signals:
+    void NetworkAdded();
+    void NetworkRemoved();
+    void InterfaceAdded();
+    void InterfaceRemoved();
 };
 
 #endif // MANAGERNOTIFICATIONSINK_H

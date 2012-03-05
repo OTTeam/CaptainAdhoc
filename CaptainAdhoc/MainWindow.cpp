@@ -1,17 +1,22 @@
 #include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <iostream>
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-
+#ifdef TRACE
+    qDebug() << "[CONS] MainWindow";
+#endif
     /*
  * Mise en place de l'UI
  */
     lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
     address = new QLineEdit("127.0.0.1",this);
-    btconnect = new QPushButton("Connect",this);
+    btconnect = new QPushButton("Connexion",this);
+    btdisconnect = new QPushButton("Déconnexion",this);
     sendHello = new QPushButton("Envoi d'un fichiers",this);
 
     progressBar = new QProgressBar(this);
@@ -19,18 +24,22 @@ MainWindow::MainWindow(QWidget *parent)
     progressBar->setMaximum(100);
     lbDlSpeed = new QLabel("",this);
 
+    _wifi = new WifiConnection();
 
-
-
-    connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
-    connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
+    connect( _wifi, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
+    connect( _wifi, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)) );
+    connect( btconnect, SIGNAL(clicked()), _wifi, SLOT(Connect()) );
+    connect( btdisconnect, SIGNAL(clicked()), _wifi, SLOT(Disconnect()) );
+    connect( sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(lbNbClients);
     layout->addWidget(address);
     layout->addWidget(btconnect);
+    layout->addWidget(btdisconnect);
+    btdisconnect->setEnabled(false);
     layout->addWidget(sendHello);
-
+    sendHello->setEnabled(false);
 
     QHBoxLayout *dlLayout = new QHBoxLayout();
 
@@ -41,33 +50,28 @@ MainWindow::MainWindow(QWidget *parent)
     this->setLayout(layout);
 
     /*
- * Création du gestionnaire de clients
-*/
-    gestionnaire = new GestionClients(this);
+     * Création du gestionnaire de clients
+     */
+    _gestionnaire = new GestionClients(this);
 
-    connect(this,SIGNAL(InitiateConnection(QHostAddress)),gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
-    connect(gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
-    connect(gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
-    connect(gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
+    connect(this,SIGNAL(InitiateConnection(QHostAddress)),_gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
+    connect(_gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
+    connect(_gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
+    connect(_gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
 }
 
 MainWindow::~MainWindow()
 {
-    
+#ifdef TRACE
+    qDebug() << "[DEST] MainWindow";
+#endif
+    delete _wifi;
 }
 
-
-
-
-void MainWindow::ConnectClicked()
-{
-    emit InitiateConnection(QHostAddress(address->text()));
-
-}
 
 void MainWindow::HelloClicked()
 {
-    gestionnaire->sendToAll();
+    _gestionnaire->sendToAll();
 }
 
 
@@ -78,9 +82,9 @@ void MainWindow::UpdateClientsNumber(int nbClients)
     lbNbClients->setText(text);
 }
 
+
 void MainWindow::UpdateProgress(int Progress)
 {
-
     progressBar->setValue(Progress);
 }
 
@@ -101,3 +105,54 @@ void MainWindow::UpdateDlSpeed(int bytesPerSec)
 
     lbDlSpeed->setText(text);
 }
+
+
+
+void MainWindow::onConnectionStatusChanged(int status)
+{
+    switch (status)
+    {
+    case FORMED:
+        qDebug() << "Notification received : network formed";
+        btconnect->setEnabled(false);
+        btdisconnect->setEnabled(true);
+        sendHello->setEnabled(true);
+        //TODO : lancer le broadcast
+        break;
+    case CONNECTED:
+        qDebug() << "Notification received : connected to network";
+        btconnect->setEnabled(false);
+        btdisconnect->setEnabled(true);
+        sendHello->setEnabled(true);
+        //TODO : lancer le broadcast
+        break;
+    case DISCONNECTED:
+        qDebug() << "Notification received : disconnected from network";
+        btconnect->setEnabled(true);
+        btdisconnect->setEnabled(false);
+        sendHello->setEnabled(false);
+        //TODO : arreter le broadcast
+        break;
+    }
+}
+
+void MainWindow::onConnectionFail(int reason)
+{
+    switch(reason)
+    {
+    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
+        qDebug() << "Notification received : connection fail (domain mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
+        qDebug() << "Notification received : connection fail (pwd mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
+        qDebug() << "Notification received : connection fail";
+        break;
+    default:
+        QMessageBox msgBox;
+        msgBox.setText("La connexion au réseau a échoué.");
+        msgBox.exec();
+    }
+}
+
