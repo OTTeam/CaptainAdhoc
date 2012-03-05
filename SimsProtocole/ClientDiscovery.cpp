@@ -31,10 +31,11 @@ void ClientDiscovery::newDatagramAvailable()
         // création d'un datastream pour lire plus simplement
         QDataStream in(datagram);
 
+        qDebug()<< ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" ;
         qDebug()<< "BROADCAST RECEIVE" ;
-        qDebug()<< "---------------------------------------" ;
 
-        qDebug() << "----- senderAddress" << senderAddress.toString() << "-----";
+
+        qDebug() << ">>>>> senderAddress" << senderAddress.toString() << ">>>>>>";
 
 
         // on place les adresses reçues dans une liste
@@ -69,6 +70,7 @@ void ClientDiscovery::newDatagramAvailable()
             localSent = true;
         qDebug() << _socket->localAddress().toString();
         qDebug() << "***********************************";
+        qDebug()<< ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" ;
 
         if (localSent == false)
             emit DatagramReceived(senderAddress,routesReceived);
@@ -88,8 +90,9 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
     out << (quint16) routesList.size();
     // écriture de la liste des routes
 
-    qDebug()<< "BROADCAST SEND" ;
     qDebug()<< "---------------------------------------" ;
+    qDebug()<< "BROADCAST SEND" ;
+
     foreach(Client *client, routesList)
     {
         out << client->address().toString();
@@ -99,5 +102,5 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
     qDebug()<< "---------------------------------------" ;
     _socket->writeDatagram(datagram.data(), datagram.size(),
                           QHostAddress::Broadcast, DISCOVERY_PORT);
-    qDebug()<< "datagram envoyé : " << datagram.data();
+
 }
