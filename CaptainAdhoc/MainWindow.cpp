@@ -37,8 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(address);
     layout->addWidget(btconnect);
     layout->addWidget(btdisconnect);
+    btdisconnect->setEnabled(false);
     layout->addWidget(sendHello);
-
+    sendHello->setEnabled(false);
 
     QHBoxLayout *dlLayout = new QHBoxLayout();
 
@@ -113,14 +114,23 @@ void MainWindow::onConnectionStatusChanged(int status)
     {
     case FORMED:
         qDebug() << "Notification received : network formed";
+        btconnect->setEnabled(false);
+        btdisconnect->setEnabled(true);
+        sendHello->setEnabled(true);
         //TODO : lancer le broadcast
         break;
     case CONNECTED:
         qDebug() << "Notification received : connected to network";
+        btconnect->setEnabled(false);
+        btdisconnect->setEnabled(true);
+        sendHello->setEnabled(true);
         //TODO : lancer le broadcast
         break;
     case DISCONNECTED:
         qDebug() << "Notification received : disconnected from network";
+        btconnect->setEnabled(true);
+        btdisconnect->setEnabled(false);
+        sendHello->setEnabled(false);
         //TODO : arreter le broadcast
         break;
     }

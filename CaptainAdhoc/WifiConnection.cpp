@@ -104,15 +104,12 @@ void WifiConnection::onConnectionStatusChanged(int status)
     switch (status)
     {
     case FORMED:
-        qDebug() << "Notification received : network formed";
         _connected = true;
         break;
     case CONNECTED:
-        qDebug() << "Notification received : connected to network";
         _connected = true;
         break;
     case DISCONNECTED:
-        qDebug() << "Notification received : disconnected from network";
         _connected = false;
         break;
     }
