@@ -67,7 +67,7 @@ void WifiNetwork::RegisterNetworkNotifications()
         connect( _networkSink, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
         connect( _networkSink, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionStatusChanged(int)) );
 
-        qDebug() << "Casting NetWork in ConnectionPointContainer... ";
+        qDebug() << "Casting Network in ConnectionPointContainer... ";
         ans = _network->QueryInterface(IID_IConnectionPointContainer, (void**) &pConnectionPointContainer);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
@@ -75,7 +75,7 @@ void WifiNetwork::RegisterNetworkNotifications()
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
-        qDebug() << "Registering for notifications... ";
+        qDebug() << "Registering for network notifications... ";
         ans = pConnectionPoint->Advise((IUnknown*) _networkSink, &_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
@@ -92,10 +92,10 @@ void WifiNetwork::UnregisterNetworkNotifications()
     if (_registered)
     {
         HRESULT ans;
-        IConnectionPointContainer  * pConnectionPointContainer;
+        IConnectionPointContainer * pConnectionPointContainer;
         IConnectionPoint * pConnectionPoint;
 
-        qDebug() << "Casting NetWork in ConnectionPointContainer... ";
+        qDebug() << "Casting Network in ConnectionPointContainer... ";
 
         ans = _network->QueryInterface(IID_IConnectionPointContainer, (void**) &pConnectionPointContainer);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
@@ -104,7 +104,7 @@ void WifiNetwork::UnregisterNetworkNotifications()
         ans = pConnectionPointContainer->FindConnectionPoint(IID_IDot11AdHocNetworkNotificationSink, &pConnectionPoint);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 
-        qDebug() << "Unregistering for notifications... ";
+        qDebug() << "Unregistering for network notifications... ";
         ans = pConnectionPoint->Unadvise(_sinkCookie);
         qDebug() << ((SUCCEEDED(ans)) ? "OK" : "KO");
 

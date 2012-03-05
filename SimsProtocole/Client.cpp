@@ -52,8 +52,8 @@ Client::Client(QHostAddress address)
 
 void Client::ConfigClient()
 {
-    connect(_socket, SIGNAL(Connected()),         this, SIGNAL(Connected()));
-    connect(_socket, SIGNAL(Disconnected()),      this, SIGNAL(Disconnected()));
+    connect(_socket, SIGNAL(connected()),         this, SIGNAL(Connected()));
+    connect(_socket, SIGNAL(disconnected()),      this, SIGNAL(Disconnected()));
     connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
     _messageLength = 0;
     _etat = IDLE;

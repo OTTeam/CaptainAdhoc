@@ -96,7 +96,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
 void GestionClients::newConnectionDone(QTcpSocket *socket)
 {
     Client *client = new Client(socket);
-    connect(client, SIGNAL(connected()),this,SLOT(clientConnected()));
+    connect(client, SIGNAL(Connected()),this,SLOT(clientConnected()));
 }
 
 
@@ -105,7 +105,7 @@ void GestionClients::clientConnected()
     Client *client = (Client *) sender();
     connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
     connect(client,SIGNAL(BytesSentUpdate(int))    , this, SLOT(clientSent(int)));
-    connect(client,SIGNAL(disconnected())          , this, SLOT(clientDisconnect()));
+    connect(client,SIGNAL(Disconnected())          , this, SLOT(clientDisconnect()));
     connect(client,SIGNAL(DownloadSpeedUpdate(int)), this, SLOT(downloadSpeedUpdate(int)));
     connect(client,SIGNAL(UploadSpeedUpdate(int))  , this, SLOT(uploadSpeedUpdate(int)));
 
