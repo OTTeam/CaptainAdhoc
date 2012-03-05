@@ -40,8 +40,8 @@ void GestionClients::clientSent(int percentComplete)
 void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<RoutesTableElt> routes)
 {
     qDebug()<< "********************************************" ;
-    qDebug()<< "newConnectionREquest" ;
-
+    qDebug()<< "newConnectionRequest" ;
+    qDebug()<< "routes : " << routes.size();
     Client *broadcasterClient;
     // première étape : vérifier si l'envoyeur du broadcast est nouveau ou pas.
     bool broadCasterExists = false;
@@ -56,7 +56,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         }
     }
 
-    qDebug() << "broadCasterExists :" << broadCasterExists;
+   // qDebug() << "broadCasterExists :" << broadCasterExists;
 
     //s'il nexiste pas, on le crée (on ne connecte pas le socket tout de suite, afin de pouvoir ajouter les autres entre temps
     if (broadCasterExists == false)
@@ -70,7 +70,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     foreach(RoutesTableElt newRoute, routes)
     {
         bool routeExists= false;
-        qDebug()<< "route :" << newRoute.destAddr.toString() << "hop :" << newRoute.hopNumber;
+        //qDebug()<< "route :" << newRoute.destAddr.toString() << "hop :" << newRoute.hopNumber;
         //parcourt des clients pour retrouver la route.
         foreach (Client *client, _clients)
         {
@@ -81,13 +81,13 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
                 // si la nouvelle route est meilleure, on change celle du client
                 if (client->hopNumber() > newRoute.hopNumber)
                 {
-                    qDebug() << "updateRoute";
+                    //qDebug() << "updateRoute";
                     client->UpdateRoute(broadcasterClient->socket(), newRoute.hopNumber);
                 }
                 break;
             }
         }
-        qDebug() << "routeExists :" << routeExists;
+        //qDebug() << "routeExists :" << routeExists;
         // si c'est une nouvelle route, on rajoute le client.
         if (!routeExists)
         {
