@@ -39,6 +39,9 @@ void GestionClients::clientSent(int percentComplete)
 
 void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<RoutesTableElt> routes)
 {
+    qDebug()<< "********************************************" ;
+    qDebug()<< "newConnectionREquest" ;
+
     Client *broadcasterClient;
     // première étape : vérifier si l'envoyeur du broadcast est nouveau ou pas.
     bool broadCasterExists = false;
@@ -47,10 +50,14 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         if (client->socket()->peerAddress() == broadcasterAddress)
         {
             broadCasterExists = true;
+
             broadcasterClient = client;
             break;
         }
     }
+
+    qDebug() << "broadCasterExists :" << broadCasterExists;
+
     //s'il nexiste pas, on le crée (on ne connecte pas le socket tout de suite, afin de pouvoir ajouter les autres entre temps
     if (broadCasterExists == false)
     {
@@ -62,7 +69,8 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     // ensuite, on rajoute toutes les routes en mettant le noeud en nextHop
     foreach(RoutesTableElt newRoute, routes)
     {
-        bool routeExists;
+        bool routeExists= false;
+        qDebug()<< "route :" << newRoute.destAddr.toString() << "hop :" << newRoute.hopNumber;
         //parcourt des clients pour retrouver la route.
         foreach (Client *client, _clients)
         {
@@ -73,11 +81,13 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
                 // si la nouvelle route est meilleure, on change celle du client
                 if (client->hopNumber() > newRoute.hopNumber)
                 {
+                    qDebug() << "updateRoute";
                     client->UpdateRoute(broadcasterClient->socket(), newRoute.hopNumber);
                 }
                 break;
             }
         }
+        qDebug() << "routeExists :" << routeExists;
         // si c'est une nouvelle route, on rajoute le client.
         if (!routeExists)
         {
@@ -90,6 +100,8 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     if ( !broadCasterExists)
         broadcasterClient->connectSocket();
 
+
+    qDebug()<< "********************************************" ;
 }
 
 
@@ -232,7 +244,8 @@ void GestionClients::clientBytesAvailable()
 void GestionClients::clientBytesWritten(qint64 bytesWritten)
 {
     Q_UNUSED(bytesWritten)
-
+    Client *client = (Client *) sender();
+    client->newBytesWritten(bytesWritten);
 }
 
 

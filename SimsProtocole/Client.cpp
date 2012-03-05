@@ -46,6 +46,7 @@ Client::Client(QHostAddress address)
     _socket = new QTcpSocket(this);
     ConfigClient();
     _nextHop = address;
+    _hopNumber = 1;
     //_socket->connectToHost(address,PORT_SERVEUR);
 }
 
