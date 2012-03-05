@@ -6,12 +6,18 @@
 
 WifiConnection::WifiConnection()
 {
+#ifdef TRACE
+    qDebug() << "[CONS] WifiConnection";
+#endif
     _manager = new WifiManager();
     _network = NULL;
 }
 
 WifiConnection::~WifiConnection()
 {
+#ifdef TRACE
+    qDebug() << "[DEST] WifiConnection";
+#endif
     Disconnect();
     delete _manager;
     delete _network;

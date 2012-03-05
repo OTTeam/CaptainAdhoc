@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
     address = new QLineEdit("127.0.0.1",this);
     btconnect = new QPushButton("Connect",this);
+    btdisconnect = new QPushButton("Disconnect",this);
     sendHello = new QPushButton("Envoi d'un fichiers",this);
 
     progressBar = new QProgressBar(this);
@@ -23,16 +24,17 @@ MainWindow::MainWindow(QWidget *parent)
     progressBar->setMaximum(100);
     lbDlSpeed = new QLabel("",this);
 
-    ConnectWifi();
-
+    _wifi = new WifiConnection();
 
     connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
+    connect(btdisconnect,SIGNAL(clicked()),_wifi,SLOT(Disconnect()));
     connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(lbNbClients);
     layout->addWidget(address);
     layout->addWidget(btconnect);
+    layout->addWidget(btdisconnect);
     layout->addWidget(sendHello);
 
 
@@ -47,12 +49,12 @@ MainWindow::MainWindow(QWidget *parent)
     /*
  * Création du gestionnaire de clients
 */
-    gestionnaire = new GestionClients(this);
+    _gestionnaire = new GestionClients(this);
 
-    connect(this,SIGNAL(InitiateConnection(QHostAddress)),gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
-    connect(gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
-    connect(gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
-    connect(gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
+    connect(this,SIGNAL(InitiateConnection(QHostAddress)),_gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
+    connect(_gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
+    connect(_gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
+    connect(_gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
 }
 
 MainWindow::~MainWindow()
@@ -60,81 +62,18 @@ MainWindow::~MainWindow()
 #ifdef TRACE
     qDebug() << "[DEST] MainWindow";
 #endif
-    delete _network;
+    delete _wifi;
 }
-
-void MainWindow::ConnectWifi()
-{
-    manager.RegisterNotifications();
-    QList<WifiInterface*> * interfaceList;
-    interfaceList = manager.GetInterfaces();
-    qDebug() << "Got" << interfaceList->count() << "interface(s) :";
-    foreach (WifiInterface * intface,*interfaceList)
-    {
-        qDebug() << "Interface :" << intface->GetName();
-        qDebug() << "Radio :" << ((intface->IsRadioOn())?"ON" : "OFF");
-        switch(intface->GetStatus())
-        {
-        case CONNECTED:
-            qDebug() << "Status : Connecté";
-            intface->DisconnectWifi();
-            break;
-        case FORMED:
-            qDebug() << "Status : En attente";
-            break;
-        case DISCONNECTED:
-            qDebug() << "Status : Déconnecté";
-            break;
-        }
-
-    }
-
-    manager.DeleteInterfaceList(interfaceList);
-
-    QList<WifiNetwork*> * netList;
-    netList = manager.GetNetworks();
-    qDebug() << "Got" << netList->count() << "network(s) :";
-    bool found =false;
-    foreach (WifiNetwork * net,*netList)
-    {
-        qDebug() << "Network :" << net->GetSSID();
-        if (net->GetSSID() == ADHOC_SSID)
-        {
-            _network = net;
-            _network->RegisterNetworkNotifications();
-            _network->Connect(ADHOC_PWD);
-            found=true;
-        }
-    }
-
-    if (found)
-    {
-        netList->removeOne(_network);
-    }
-
-    manager.DeleteNetworkList(netList);
-
-    if (!found)
-    {
-        _network = manager.CreateWifi(ADHOC_SSID,ADHOC_PWD);
-        _network->RegisterNetworkNotifications();
-    }
-
-    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
-}
-
-
 
 
 void MainWindow::ConnectClicked()
 {
-    emit InitiateConnection(QHostAddress(address->text()));
-
+    _wifi->Connect();
 }
 
 void MainWindow::HelloClicked()
 {
-    gestionnaire->sendToAll();
+    _gestionnaire->sendToAll();
 }
 
 
@@ -147,7 +86,6 @@ void MainWindow::UpdateClientsNumber(int nbClients)
 
 void MainWindow::UpdateProgress(int Progress)
 {
-
     progressBar->setValue(Progress);
 }
 
