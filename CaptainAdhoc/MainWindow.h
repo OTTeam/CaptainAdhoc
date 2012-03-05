@@ -23,6 +23,7 @@ signals:
 
 private slots:
     void ConnectClicked();
+    void DisconnectClicked();
     void HelloClicked();
     void UpdateClientsNumber(int);
     void UpdateProgress(int);

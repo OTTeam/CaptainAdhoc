@@ -26,9 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     _wifi = new WifiConnection();
 
-    connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
-    connect(btdisconnect,SIGNAL(clicked()),_wifi,SLOT(Disconnect()));
-    connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
+    connect( btconnect, SIGNAL(clicked()), this, SLOT(ConnectClicked()) );
+    connect( btdisconnect, SIGNAL(clicked()), this, SLOT(DisconnectClicked()) );
+    connect( sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(lbNbClients);
@@ -47,8 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
     this->setLayout(layout);
 
     /*
- * Création du gestionnaire de clients
-*/
+     * Création du gestionnaire de clients
+     */
     _gestionnaire = new GestionClients(this);
 
     connect(this,SIGNAL(InitiateConnection(QHostAddress)),_gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
@@ -69,7 +69,16 @@ MainWindow::~MainWindow()
 void MainWindow::ConnectClicked()
 {
     _wifi->Connect();
+    // Activer broadcast
 }
+
+
+void MainWindow::DisconnectClicked()
+{
+    _wifi->Disconnect();
+    // Desactiver broadcast
+}
+
 
 void MainWindow::HelloClicked()
 {
@@ -83,6 +92,7 @@ void MainWindow::UpdateClientsNumber(int nbClients)
     text += QString::number(nbClients) + "</strong>";
     lbNbClients->setText(text);
 }
+
 
 void MainWindow::UpdateProgress(int Progress)
 {
@@ -107,6 +117,8 @@ void MainWindow::UpdateDlSpeed(int bytesPerSec)
     lbDlSpeed->setText(text);
 }
 
+
+
 void MainWindow::onConnectionStatusChanged(int status)
 {
     switch (status)
@@ -122,6 +134,7 @@ void MainWindow::onConnectionStatusChanged(int status)
         break;
     }
 }
+
 
 void MainWindow::onConnectionFail(int reason)
 {
