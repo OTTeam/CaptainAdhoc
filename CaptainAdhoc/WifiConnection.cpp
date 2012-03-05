@@ -11,11 +11,7 @@ WifiConnection::WifiConnection()
 #endif
     _manager = new WifiManager();
     _network = NULL;
-
-    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)));
-    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
-//    connect(_network, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionFail(int)));
-    connect(_network, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)));
+    _connected = false;
 }
 
 WifiConnection::~WifiConnection()
@@ -28,96 +24,96 @@ WifiConnection::~WifiConnection()
     delete _network;
 }
 
+
 void WifiConnection::Connect()
 {
-    _manager->RegisterNotifications();
-    QList<WifiInterface*> * interfaceList;
-    interfaceList = _manager->GetInterfaces();
-    qDebug() << "Got" << interfaceList->count() << "interface(s) :";
-    foreach (WifiInterface * intface,*interfaceList)
+    if( !_connected )
     {
-        qDebug() << "Interface :" << intface->GetName();
-        qDebug() << "Radio :" << ((intface->IsRadioOn())?"ON" : "OFF");
-        switch(intface->GetStatus())
+        _manager->RegisterNotifications();
+        QList<WifiInterface*> * interfaceList;
+        interfaceList = _manager->GetInterfaces();
+        qDebug() << "Got" << interfaceList->count() << "interface(s) :";
+        foreach (WifiInterface * intface,*interfaceList)
         {
-        case CONNECTED:
-            qDebug() << "Status : Connecté";
-            intface->DisconnectWifi();
-            break;
-        case FORMED:
-            qDebug() << "Status : En attente";
-            break;
-        case DISCONNECTED:
-            qDebug() << "Status : Déconnecté";
-            break;
+            qDebug() << "Interface :" << intface->GetName();
+            qDebug() << "Radio :" << ((intface->IsRadioOn())?"ON" : "OFF");
+            switch(intface->GetStatus())
+            {
+            case CONNECTED:
+                qDebug() << "Status : Connecté";
+                intface->DisconnectWifi();
+                break;
+            case FORMED:
+                qDebug() << "Status : En attente";
+                break;
+            case DISCONNECTED:
+                qDebug() << "Status : Déconnecté";
+                break;
+            }
         }
-    }
 
-    _manager->DeleteInterfaceList(interfaceList);
+        _manager->DeleteInterfaceList(interfaceList);
 
-    QList<WifiNetwork*> * netList;
-    netList = _manager->GetNetworks();
-    qDebug() << "Got" << netList->count() << "network(s) :";
-    bool found =false;
-    foreach (WifiNetwork * net,*netList)
-    {
-        qDebug() << "Network :" << net->GetSSID();
-        if (net->GetSSID() == ADHOC_SSID)
+        QList<WifiNetwork*> * netList;
+        netList = _manager->GetNetworks();
+        qDebug() << "Got" << netList->count() << "network(s) :";
+        bool found =false;
+        foreach (WifiNetwork * net,*netList)
         {
-            _network = net;
+            qDebug() << "Network :" << net->GetSSID();
+            if (net->GetSSID() == ADHOC_SSID)
+            {
+                _network = net;
+                _network->RegisterNetworkNotifications();
+                _network->Connect(ADHOC_PWD);
+                found=true;
+            }
+        }
+
+        if (found)
+        {
+            netList->removeOne(_network);
+        }
+
+        _manager->DeleteNetworkList(netList);
+
+        if (!found)
+        {
+            _network = _manager->CreateWifi(ADHOC_SSID,ADHOC_PWD);
             _network->RegisterNetworkNotifications();
-            _network->Connect(ADHOC_PWD);
-            found=true;
         }
-    }
 
-    if (found)
-    {
-        netList->removeOne(_network);
-    }
-
-    _manager->DeleteNetworkList(netList);
-
-    if (!found)
-    {
-        _network = _manager->CreateWifi(ADHOC_SSID,ADHOC_PWD);
-        _network->RegisterNetworkNotifications();
+        connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)));
+        connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
+        connect(_network, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionFail(int)));
     }
 }
+
 
 void WifiConnection::Disconnect()
 {
-    _network->Disconnect();
+    if(_connected)
+    {
+        _network->Disconnect();
+    }
 }
+
 
 void WifiConnection::onConnectionStatusChanged(int status)
 {
-//    switch (status)
-//    {
-//    case FORMED:
-//        qDebug() << "Notification received : network formed";
-//        break;
-//    case CONNECTED:
-//        qDebug() << "Notification received : connected to network";
-//        break;
-//    case DISCONNECTED:
-//        qDebug() << "Notification received : disconnected from network";
-//        break;
-//    }
-}
-
-void WifiConnection::onConnectionFail(int reason)
-{
-    switch(reason)
+    switch (status)
     {
-    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-        qDebug() << "Notification received : connection fail (domain mismatch)";
+    case FORMED:
+        qDebug() << "Notification received : network formed";
+        _connected = true;
         break;
-    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-        qDebug() << "Notification received : connection fail (pwd mismatch)";
+    case CONNECTED:
+        qDebug() << "Notification received : connected to network";
+        _connected = true;
         break;
-    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-        qDebug() << "Notification received : connection fail";
+    case DISCONNECTED:
+        qDebug() << "Notification received : disconnected from network";
+        _connected = false;
         break;
     }
 }

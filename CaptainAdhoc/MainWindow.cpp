@@ -15,8 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
  */
     lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
     address = new QLineEdit("127.0.0.1",this);
-    btconnect = new QPushButton("Connect",this);
-    btdisconnect = new QPushButton("Disconnect",this);
+    btconnect = new QPushButton("Connexion",this);
+    btdisconnect = new QPushButton("Déconnexion",this);
     sendHello = new QPushButton("Envoi d'un fichiers",this);
 
     progressBar = new QProgressBar(this);
@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     _wifi = new WifiConnection();
 
     connect( _wifi, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
+    connect( _wifi, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)) );
     connect( btconnect, SIGNAL(clicked()), _wifi, SLOT(Connect()) );
     connect( btdisconnect, SIGNAL(clicked()), _wifi, SLOT(Disconnect()) );
     connect( sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
@@ -124,3 +125,24 @@ void MainWindow::onConnectionStatusChanged(int status)
         break;
     }
 }
+
+void MainWindow::onConnectionFail(int reason)
+{
+    switch(reason)
+    {
+    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
+        qDebug() << "Notification received : connection fail (domain mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
+        qDebug() << "Notification received : connection fail (pwd mismatch)";
+        break;
+    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
+        qDebug() << "Notification received : connection fail";
+        break;
+    default:
+        QMessageBox msgBox;
+        msgBox.setText("La connexion au réseau a échoué.");
+        msgBox.exec();
+    }
+}
+

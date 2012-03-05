@@ -18,15 +18,16 @@ public slots:
 
 signals:
     void ConnectionStatusChanged(int);
-//    void ConnectionFail(int);
+    void ConnectionFail(int);
 
 private slots:
     void onConnectionStatusChanged(int);
-    void onConnectionFail(int);
 
 private:
     WifiManager * _manager;
     WifiNetwork * _network;
+
+    bool _connected;
 };
 
 #endif // WIFICONNECTION_H
