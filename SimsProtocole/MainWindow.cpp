@@ -9,33 +9,33 @@ MainWindow::MainWindow(QWidget *parent)
  /*
  * Mise en place de l'UI
  */
-    lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
-    address = new QLineEdit("127.0.0.1",this);
-    btconnect = new QPushButton("Connect",this);
-    sendHello = new QPushButton("Envoi d'un fichiers",this);
+    _lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
+    _address = new QLineEdit("127.0.0.1",this);
+    _btconnect = new QPushButton("Connect",this);
+    _sendHello = new QPushButton("Envoi d'un fichiers",this);
 
-    progressBar = new QProgressBar(this);
-    progressBar->setMinimum(0);
-    progressBar->setMaximum(100);
-    lbDlSpeed = new QLabel("",this);
-
-
+    _progressBar = new QProgressBar(this);
+    _progressBar->setMinimum(0);
+    _progressBar->setMaximum(100);
+    _lbDlSpeed = new QLabel("",this);
 
 
-    connect(btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
-    connect(sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
+
+
+    connect(_btconnect,SIGNAL(clicked()),this,SLOT(ConnectClicked()));
+    connect(_sendHello, SIGNAL(clicked()),this, SLOT(HelloClicked()));
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(lbNbClients);
-    layout->addWidget(address);
-    layout->addWidget(btconnect);
-    layout->addWidget(sendHello);
+    layout->addWidget(_lbNbClients);
+    layout->addWidget(_address);
+    layout->addWidget(_btconnect);
+    layout->addWidget(_sendHello);
 
 
     QHBoxLayout *dlLayout = new QHBoxLayout();
 
-    dlLayout->addWidget(progressBar);
-    dlLayout->addWidget(lbDlSpeed);
+    dlLayout->addWidget(_progressBar);
+    dlLayout->addWidget(_lbDlSpeed);
 
     layout->addLayout(dlLayout);
     this->setLayout(layout);
@@ -43,16 +43,16 @@ MainWindow::MainWindow(QWidget *parent)
     /*
  * Création du gestionnaire de clients
 */
-    gestionnaire = new GestionClients(this);
+    _gestionnaire = new GestionClients(this);
 
-    connect(this, SIGNAL(InitiateConnection(QHostAddress)), gestionnaire, SLOT(newConnectionRequest(QHostAddress)));
-    connect(gestionnaire, SIGNAL(ClientNumberChanged(int)), this, SLOT(UpdateClientsNumber(int)));
+    connect(this, SIGNAL(InitiateConnection(QHostAddress)), _gestionnaire, SLOT(newConnectionRequest(QHostAddress)));
+    connect(_gestionnaire, SIGNAL(ClientNumberChanged(int)), this, SLOT(UpdateClientsNumber(int)));
 
-    connect(gestionnaire, SIGNAL(ClientDownloadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
-    connect(gestionnaire, SIGNAL(ClientUploadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
+    connect(_gestionnaire, SIGNAL(ClientDownloadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
+    connect(_gestionnaire, SIGNAL(ClientUploadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
 
-    connect(gestionnaire, SIGNAL(ClientDownloadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
-    connect(gestionnaire, SIGNAL(ClientUploadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
+    connect(_gestionnaire, SIGNAL(ClientDownloadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
+    connect(_gestionnaire, SIGNAL(ClientUploadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
 
 
 }
@@ -67,13 +67,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::ConnectClicked()
 {
-    emit InitiateConnection(QHostAddress(address->text()));
+    emit InitiateConnection(QHostAddress(_address->text()));
 
 }
 
 void MainWindow::HelloClicked()
 {
-    gestionnaire->sendToAll();
+    _gestionnaire->sendToAll();
 }
 
 
@@ -81,13 +81,13 @@ void MainWindow::UpdateClientsNumber(int nbClients)
 {
     QString text = "Nombre de clients connectés : <strong>";
     text += QString::number(nbClients) + "</strong>";
-    lbNbClients->setText(text);
+    _lbNbClients->setText(text);
 }
 
 void MainWindow::UpdateClientProgress(Client *client, int Progress)
 {
     Q_UNUSED(client)
-    progressBar->setValue(Progress);
+    _progressBar->setValue(Progress);
 }
 
 
@@ -108,5 +108,5 @@ void MainWindow::UpdateDlSpeed(Client *client, int bytesPerSec)
         text = QString::number(bytesPerSec) + " o/s";
     }
 
-    lbDlSpeed->setText(text);
+    _lbDlSpeed->setText(text);
 }

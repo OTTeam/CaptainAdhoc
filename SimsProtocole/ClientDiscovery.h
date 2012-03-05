@@ -5,6 +5,8 @@
 #include <QUdpSocket>
 #include <QTimer>
 
+#include "Client.h"
+
 class ClientDiscovery : public QObject
 {
     Q_OBJECT
@@ -12,14 +14,17 @@ public:
     explicit ClientDiscovery(QObject *parent = 0);
     
 signals:
-    void DatagramReceived(QHostAddress);
+    void DatagramReceived(QHostAddress,QList<RoutesTableElt>);
+
+
+public slots:
+    void sendNewDatagram(QList<Client *> routesList);
 
 private slots:
     void newDatagramAvailable();
-    void sendNewDatagram();
+
 private:
-    QUdpSocket *socket;
-    QTimer *timer;
+    QUdpSocket *_socket;
     
 };
 

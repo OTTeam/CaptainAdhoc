@@ -28,14 +28,14 @@ private slots:
 
     void UpdateDlSpeed(Client *, int);
 private:
-    QLineEdit *address;
-    QPushButton *btconnect;
-    QPushButton *sendHello;
-    QProgressBar *progressBar;
-    QLabel *lbNbClients;
-    QLabel *lbDlSpeed;
+    QLineEdit *_address;
+    QPushButton *_btconnect;
+    QPushButton *_sendHello;
+    QProgressBar *_progressBar;
+    QLabel *_lbNbClients;
+    QLabel *_lbDlSpeed;
 
-    GestionClients *gestionnaire;
+    GestionClients *_gestionnaire;
 };
 
 #endif // MAINWINDOW_H

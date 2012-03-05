@@ -3,6 +3,8 @@
 
 
 #include <QString>
+#include <QHostAddress>
+#include <QTcpSocket>
 
 class Client;
 
@@ -25,6 +27,19 @@ struct RemoteFiles
     QString filename;
     quint32 size;
     Client *client;
+};
+
+
+struct SocketsHandlers
+{
+    QTcpSocket *socket;
+    quint16 paquetSize;
+};
+
+struct RoutesTableElt
+{
+    QHostAddress destAddr;
+    quint8 hopNumber;
 };
 
 

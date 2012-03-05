@@ -7,16 +7,9 @@ ClientDiscovery::ClientDiscovery(QObject *parent) :
     QObject(parent)
 {
 
-    socket = new QUdpSocket(this);
-    socket->bind(DISCOVERY_PORT,QUdpSocket::ShareAddress);
-    connect(socket,SIGNAL(readyRead()),this,SLOT(newDatagramAvailable()));
-
-    timer = new QTimer(this);
-
-    timer->setInterval(BROADCAST_INTERVAL);
-    timer->setSingleShot(false);
-    connect(timer,SIGNAL(timeout()),this,SLOT(sendNewDatagram()));
-    timer->start();
+    _socket = new QUdpSocket(this);
+    _socket->bind(DISCOVERY_PORT,QUdpSocket::ShareAddress);
+    connect(_socket,SIGNAL(readyRead()),this,SLOT(newDatagramAvailable()));
 }
 
 
@@ -25,46 +18,86 @@ void ClientDiscovery::newDatagramAvailable()
     //on vient de recevoir un nouveau datagram, on vérifie
     //que c'est bien un datagram de notre programme
     // puis on émet le signal d'ajout de client si nécessaire
-    while (socket->hasPendingDatagrams())
+    while (_socket->hasPendingDatagrams())
     {
+        // récupération du datagram reçu
         QByteArray datagram;
         QHostAddress senderAddress;
-        datagram.resize(socket->pendingDatagramSize());
-        socket->readDatagram(datagram.data(), datagram.size(),&senderAddress);
-        QString text = datagram.data();
+        datagram.resize(_socket->pendingDatagramSize());
+        _socket->readDatagram(datagram.data(), datagram.size(),&senderAddress);
 
-        qDebug() << "datagram reçu : " << text;
+        //QString text = datagram.data();
+
+        // création d'un datastream pour lire plus simplement
+        QDataStream in(datagram);
+
+        qDebug()<< "BROADCAST RECEIVE" ;
+        qDebug()<< "---------------------------------------" ;
+
         qDebug() << "----- senderAddress" << senderAddress.toString() << "-----";
 
-        if (text == "CaptainAdHocBroadCast")
-        {
-            QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
-            bool localSent = false;
-            qDebug() << "************* Local ***************";
-            foreach (QHostAddress add, hostInfo.addresses())
-            {
-                qDebug() << add.toString();
-                if (senderAddress == add)
-                {
-                    localSent = true;
-                }
-            }
-            qDebug() << "***********************************";
 
-            if (localSent == false)
-                emit DatagramReceived(senderAddress);
+        // on place les adresses reçues dans une liste
+        QList<RoutesTableElt> routesReceived;
+        while (!in.atEnd())
+        {
+            RoutesTableElt newElt;
+            in >> newElt.destAddr;
+            in >> newElt.hopNumber;
+
+            // on incrémente le hop number car on a la passerelle en plus
+            newElt.hopNumber++;
+
+            routesReceived.push_back(newElt);
+            qDebug() << "Address :" << newElt.destAddr.toString() << " -- Hop :" << newElt.hopNumber;
 
         }
+
+
+        QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
+        bool localSent = false;
+        qDebug() << "************* Local ***************";
+        foreach (QHostAddress add, hostInfo.addresses())
+        {
+            qDebug() << add.toString();
+            if (senderAddress == add)
+            {
+                localSent = true;
+            }
+        }
+        if (senderAddress == _socket->localAddress())
+            localSent = true;
+        qDebug() << _socket->localAddress().toString();
+        qDebug() << "***********************************";
+
+        if (localSent == false)
+            emit DatagramReceived(senderAddress,routesReceived);
+
     }
 
 }
 
 
-void ClientDiscovery::sendNewDatagram()
+void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
 {
-    QByteArray datagram = "CaptainAdHocBroadCast";
 
-    socket->writeDatagram(datagram.data(), datagram.size(),
+    QByteArray datagram;
+    QDataStream out(&datagram, QIODevice::WriteOnly);
+
+    // écriture du nombre de routes
+    out << (quint16) routesList.size();
+    // écriture de la liste des routes
+
+    qDebug()<< "BROADCAST SEND" ;
+    qDebug()<< "---------------------------------------" ;
+    foreach(Client *client, routesList)
+    {
+        out << client->address().toString();
+        out << client->hopNumber();
+        qDebug() << "Address :" << client->address().toString() << " -- hop :" << client->hopNumber();
+    }
+    qDebug()<< "---------------------------------------" ;
+    _socket->writeDatagram(datagram.data(), datagram.size(),
                           QHostAddress::Broadcast, DISCOVERY_PORT);
     qDebug()<< "datagram envoyé : " << datagram.data();
 }

@@ -20,9 +20,9 @@ private slots:
     void nouvelleConnexion();
 
 private:
-    QTcpServer *serveur;
+    QTcpServer *_serveur;
 
-    bool serverStarted;
+    bool _serverStarted;
 
 };
 
