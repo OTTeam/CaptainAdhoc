@@ -39,6 +39,7 @@ void ClientDiscovery::newDatagramAvailable()
 
         int RouteListSize = 0;
         in >> RouteListSize;
+        qDebug() << "RouteList size : " << RouteListSize;
         // on place les adresses reçues dans une liste
         QList<RoutesTableElt> routesReceived;
         for(int i = 0; i<RouteListSize; i++)
@@ -51,7 +52,7 @@ void ClientDiscovery::newDatagramAvailable()
             newElt.hopNumber++;
 
             routesReceived.push_back(newElt);
-            qDebug() << "Address :" << newElt.destAddr.toString() << " -- Hop :" << newElt.hopNumber;
+//            qDebug() << "Address :" << newElt.destAddr.toString() << " -- Hop :" << newElt.hopNumber;
 
         }
 
