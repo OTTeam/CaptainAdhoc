@@ -37,10 +37,11 @@ void ClientDiscovery::newDatagramAvailable()
 
         qDebug() << ">>>>> senderAddress" << senderAddress.toString() << ">>>>>>";
 
-
+        int RouteListSize = 0;
+        in >> RouteListSize;
         // on place les adresses reçues dans une liste
         QList<RoutesTableElt> routesReceived;
-        while (!in.atEnd())
+        for(int i = 0; i<RouteListSize; i++)
         {
             RoutesTableElt newElt;
             in >> newElt.destAddr;
@@ -90,8 +91,9 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
     out << (quint16) routesList.size();
     // écriture de la liste des routes
 
-    qDebug()<< "---------------------------------------" ;
+    qDebug()<< "BS---------------------------------------" ;
     qDebug()<< "BROADCAST SEND" ;
+    out << routesList.size();
 
     foreach(Client *client, routesList)
     {
@@ -99,7 +101,7 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
         out << client->hopNumber();
         qDebug() << "Address :" << client->address().toString() << " -- hop :" << client->hopNumber();
     }
-    qDebug()<< "---------------------------------------" ;
+    qDebug()<< "---------------------------------------BS" ;
     _socket->writeDatagram(datagram.data(), datagram.size(),
                           QHostAddress::Broadcast, DISCOVERY_PORT);
 

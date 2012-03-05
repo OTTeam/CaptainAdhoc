@@ -18,7 +18,7 @@ GestionClients::GestionClients(QObject *parent) :
     _timerBroadcast->start();
 
 
-
+    _clients.clear();
  }
 
 
