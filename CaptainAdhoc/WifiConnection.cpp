@@ -11,6 +11,11 @@ WifiConnection::WifiConnection()
 #endif
     _manager = new WifiManager();
     _network = NULL;
+
+    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)));
+    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
+//    connect(_network, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionFail(int)));
+    connect(_network, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)));
 }
 
 WifiConnection::~WifiConnection()
@@ -78,11 +83,6 @@ void WifiConnection::Connect()
         _network = _manager->CreateWifi(ADHOC_SSID,ADHOC_PWD);
         _network->RegisterNetworkNotifications();
     }
-
-    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SIGNAL(ConnectionStatusChanged(int)));
-    connect(_network, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)));
-    connect(_network, SIGNAL(ConnectionFail(int)), this, SIGNAL(ConnectionFail(int)));
-    connect(_network, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)));
 }
 
 void WifiConnection::Disconnect()
@@ -92,18 +92,18 @@ void WifiConnection::Disconnect()
 
 void WifiConnection::onConnectionStatusChanged(int status)
 {
-    switch (status)
-    {
-    case FORMED:
-        qDebug() << "Notification received : network formed";
-        break;
-    case CONNECTED:
-        qDebug() << "Notification received : connected to network";
-        break;
-    case DISCONNECTED:
-        qDebug() << "Notification received : disconnected from network";
-        break;
-    }
+//    switch (status)
+//    {
+//    case FORMED:
+//        qDebug() << "Notification received : network formed";
+//        break;
+//    case CONNECTED:
+//        qDebug() << "Notification received : connected to network";
+//        break;
+//    case DISCONNECTED:
+//        qDebug() << "Notification received : disconnected from network";
+//        break;
+//    }
 }
 
 void WifiConnection::onConnectionFail(int reason)

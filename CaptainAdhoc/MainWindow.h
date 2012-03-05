@@ -22,14 +22,12 @@ signals:
     void InitiateConnection(QHostAddress);
 
 private slots:
-    void ConnectClicked();
-    void DisconnectClicked();
     void HelloClicked();
     void UpdateClientsNumber(int);
     void UpdateProgress(int);
     void UpdateDlSpeed(int);
     void onConnectionStatusChanged(int);
-    void onConnectionFail(int);
+//    void onConnectionFail(int);
 
 private:
     QLineEdit *address;

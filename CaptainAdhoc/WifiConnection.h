@@ -18,7 +18,7 @@ public slots:
 
 signals:
     void ConnectionStatusChanged(int);
-    void ConnectionFail(int);
+//    void ConnectionFail(int);
 
 private slots:
     void onConnectionStatusChanged(int);

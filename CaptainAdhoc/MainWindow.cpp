@@ -26,8 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     _wifi = new WifiConnection();
 
-    connect( btconnect, SIGNAL(clicked()), this, SLOT(ConnectClicked()) );
-    connect( btdisconnect, SIGNAL(clicked()), this, SLOT(DisconnectClicked()) );
+    connect( _wifi, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
+    connect( btconnect, SIGNAL(clicked()), _wifi, SLOT(Connect()) );
+    connect( btdisconnect, SIGNAL(clicked()), _wifi, SLOT(Disconnect()) );
     connect( sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -63,20 +64,6 @@ MainWindow::~MainWindow()
     qDebug() << "[DEST] MainWindow";
 #endif
     delete _wifi;
-}
-
-
-void MainWindow::ConnectClicked()
-{
-    _wifi->Connect();
-    // Activer broadcast
-}
-
-
-void MainWindow::DisconnectClicked()
-{
-    _wifi->Disconnect();
-    // Desactiver broadcast
 }
 
 
@@ -125,29 +112,15 @@ void MainWindow::onConnectionStatusChanged(int status)
     {
     case FORMED:
         qDebug() << "Notification received : network formed";
+        //TODO : lancer le broadcast
         break;
     case CONNECTED:
         qDebug() << "Notification received : connected to network";
+        //TODO : lancer le broadcast
         break;
     case DISCONNECTED:
         qDebug() << "Notification received : disconnected from network";
-        break;
-    }
-}
-
-
-void MainWindow::onConnectionFail(int reason)
-{
-    switch(reason)
-    {
-    case DOT11_ADHOC_CONNECT_FAIL_DOMAIN_MISMATCH:
-        qDebug() << "Notification received : connection fail (domain mismatch)";
-        break;
-    case DOT11_ADHOC_CONNECT_FAIL_PASSPHRASE_MISMATCH:
-        qDebug() << "Notification received : connection fail (pwd mismatch)";
-        break;
-    case DOT11_ADHOC_CONNECT_FAIL_OTHER:
-        qDebug() << "Notification received : connection fail";
+        //TODO : arreter le broadcast
         break;
     }
 }
