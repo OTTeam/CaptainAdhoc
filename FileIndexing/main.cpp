@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "FileIndexer.h"
-
+#include "FileUtils.h"
 static void printFileNames(QList<FileModel> list)
 {
     foreach (FileModel file, list) {
@@ -18,10 +18,8 @@ static void printFileNames(QList<FileModel> list)
     }
 }
 
-int main(int argc, char *argv[])
+static void testIndexing(QCoreApplication& a)
 {
-    QCoreApplication a(argc, argv);
-
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "fileDb");
     db.setDatabaseName("files.sqlite");
     if (!db.open()) {
@@ -29,7 +27,7 @@ int main(int argc, char *argv[])
         a.quit();
     }
 
-    if (!FileIndexDao::createTable(db, false)) {
+    if (!FileIndexDao::createTable(db, true)) {
         qCritical(qPrintable(db.lastError().text()));
         a.quit();
     }
@@ -71,5 +69,25 @@ int main(int argc, char *argv[])
     printFileNames(indexer.searchFiles("*"));
 
     db.close();
+}
+
+static void testMd5Hash()
+{
+    QString path("E:/fr_visual_studio_2010_professional_x86_dvd_519327.iso");
+    qDebug() << FileUtils::fileMd5Hash(path);
+}
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+
+    QTime time;
+    time.start();
+
+    testIndexing(a);
+//    testMd5Hash();
+
+    qDebug("Execution time : %fs", time.elapsed() / 1000.);
+
     return a.exec();
 }
