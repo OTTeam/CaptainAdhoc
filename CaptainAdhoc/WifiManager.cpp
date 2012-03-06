@@ -5,6 +5,7 @@
 #include <adhoc.h>
 #include <iostream>
 #include <OCIdl.h>
+#include "utils.h"
 
 using namespace std;
 
