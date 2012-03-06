@@ -43,13 +43,12 @@ void ClientDiscovery::newDatagramAvailable()
         // on place les adresses reçues dans une liste
         QList<RoutesTableElt> routesReceived;
         routesReceived.clear();
+
         for(int i = 0; i<RouteListSize; i++)
         {
             RoutesTableElt newElt;
 
             QString destAddrStr;
-
-
             in >> destAddrStr;
             in >> newElt.hopNumber;
 
@@ -59,7 +58,7 @@ void ClientDiscovery::newDatagramAvailable()
             newElt.hopNumber++;
 
             routesReceived.push_back(newElt);
-            qDebug() << "Address :" << newElt.destAddr << " -- Hop :" << newElt.hopNumber;
+            qDebug() << "AddressStr :" << destAddrStr << "Address :" << newElt.destAddr << " -- Hop :" << newElt.hopNumber;
 
         }
 
@@ -96,12 +95,12 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
     QDataStream out(&datagram, QIODevice::WriteOnly);
 
     // écriture du nombre de routes
-    out << (quint16) routesList.size();
+
     // écriture de la liste des routes
 
     qDebug()<< "BS---------------------------------------" ;
     qDebug()<< "BROADCAST SEND" ;
-    out << (qint16) routesList.count();
+    out << (quint16) routesList.size();
     qDebug()<< "routesList Count : " << routesList.count();
     foreach(Client *client, routesList)
     {
