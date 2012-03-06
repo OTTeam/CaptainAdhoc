@@ -69,6 +69,7 @@ Client::Client(QHostAddress address)
 void Client::ConfigClient()
 {
     connect(_socket, SIGNAL(connected()),         this, SIGNAL(Connected()));
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),         this, SIGNAL(SocketError()));
     connect(_socket, SIGNAL(disconnected()),      this, SIGNAL(Disconnected()));
     //connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
     _messageLength = 0;
@@ -134,45 +135,41 @@ void Client::newBytesReceived()
     QDataStream in(_socket);
 
 
-    while (_socket->bytesAvailable()>0)
+    if (_messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
     {
-        if (_messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
-        {
-            if (_socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
-                return;
-
-             in >> _messageLength; // Si on a reçu la taille du message en entier, on la récupère
-
-        }
-
-        // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
-        if (_socket->bytesAvailable() < _messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        if (_socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
             return;
 
-        // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
-        quint16 type;
-        in >> type;
-        switch (type)
-        {
-        case FILE_REQUEST_INIT:
-            receivedFileRequestInit();
-            break;
-        case FILE_DATA:
-            receivedFileData();
-            break;
-        case FILE_REQUEST_ACK:
-            receivedFileRequestAck();
-            break;
-        case LIST_REQUEST:
-            receivedFileList();
-            break;
-        default:
-            break;
-        }
+         in >> _messageLength; // Si on a reçu la taille du message en entier, on la récupère
 
-        _messageLength = 0;
     }
 
+    // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
+    if (_socket->bytesAvailable() < _messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        return;
+
+    // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
+    quint16 type;
+    in >> type;
+    switch (type)
+    {
+    case FILE_REQUEST_INIT:
+        receivedFileRequestInit();
+        break;
+    case FILE_DATA:
+        receivedFileData();
+        break;
+    case FILE_REQUEST_ACK:
+        receivedFileRequestAck();
+        break;
+    case LIST_REQUEST:
+        receivedFileList();
+        break;
+    default:
+        break;
+    }
+
+    _messageLength = 0;
 }
 
 void Client::receivedFileRequest()

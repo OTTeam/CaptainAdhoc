@@ -66,7 +66,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     {
         broadcasterClient = new Client(broadcasterAddress);
         connect(broadcasterClient, SIGNAL(Connected()), this, SLOT(clientConnected()));
-        connect(broadcasterClient->socket(), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clientConnectionFailed()));
+        connect(broadcasterClient, SIGNAL(SocketError()), this, SLOT(clientConnectionFailed()));
 
     }
 
@@ -101,7 +101,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         {
             Client *client = new Client(broadcasterClient->socket(),newRoute.destAddr,broadcasterAddress, newRoute.hopNumber);
             connect(client, SIGNAL(Connected()), this, SLOT(clientConnected()));
-            connect(client->socket(), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clientConnectionFailed()));
+            connect(client, SIGNAL(SocketError()), this, SLOT(clientConnectionFailed()));
         }
     }
     // si on a créé un nouveau broadcaster, on doit connecter son socket.
@@ -125,14 +125,13 @@ void GestionClients::clientConnected()
 {
     Client *client = (Client *) sender();
 
-    disconnect(client->socket(),SIGNAL(error(QAbstractSocket::SocketError))       , this, SLOT(clientConnectionFailed()));
-    connect(client,   SIGNAL(Disconnected())       , this, SLOT(clientDisconnect()));
-
     NewClientConfig(client);
 }
 
 void GestionClients::NewClientConfig(Client *client)
 {
+    connect(client,   SIGNAL(Disconnected())       , this, SLOT(clientDisconnect()));
+
     connect(client,SIGNAL(DownloadSpeedUpdate(int)), this, SLOT(downloadSpeedUpdate(int)));
     connect(client,SIGNAL(UploadSpeedUpdate(int))  , this, SLOT(uploadSpeedUpdate(int)));
     connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
@@ -183,7 +182,7 @@ void GestionClients::clientConnectionFailed()
     Client *client = (Client *)sender();
 
     //on détruit juste le client
-    delete client;
+    client->deleteLater();
 
 }
 
@@ -196,7 +195,8 @@ void GestionClients::clientDisconnect()
         _socketsHandlers.removeOne(socketHandler);
 
     _clients.removeOne(client);
-    delete client;
+
+    client->deleteLater();
 
 
     emit ClientNumberChanged(_clients.size());
@@ -225,11 +225,13 @@ void GestionClients::clientBytesAvailable()
 
     while (senderSocket->bytesAvailable() > 0)
     {
-        if (socketHandler->paquetSize == 0 && senderSocket->bytesAvailable() < sizeof(quint16))
-            return;
+        if (socketHandler->paquetSize == 0)
+        {
+            if (senderSocket->bytesAvailable() < sizeof(quint16))
+                return;
 
-        in >> socketHandler->paquetSize;
-
+            in >> socketHandler->paquetSize;
+        }
         // si le paquet n'est pas entier, on passe
         if (senderSocket->bytesAvailable() < socketHandler->paquetSize)
             return;
@@ -253,13 +255,14 @@ void GestionClients::clientBytesAvailable()
 
         qDebug() << senderSocket->localAddress();
 
-
+        socketHandler->paquetSize = 0;
         if (destAdd == senderSocket->localAddress())
         {
             // on trouve le client connecté à l'adresse de l'envoyeur.
             Client *client = findClientByDest(senderAdd);
             // on appelle son slot de réception de données.
             client->newBytesReceived();
+
         }
         else
         {
@@ -278,8 +281,13 @@ void GestionClients::clientBytesAvailable()
 void GestionClients::clientBytesWritten(qint64 bytesWritten)
 {
     Q_UNUSED(bytesWritten)
-    Client *client = (Client *) sender();
-    client->newBytesWritten(bytesWritten);
+
+    // on lit l'en-tête du paquet afin de savoir pour quel client il est destiné :
+    QTcpSocket *senderSocket = (QTcpSocket *) sender();
+
+   Client *client = findClientByDest(senderSocket->peerAddress());
+
+   client->newBytesWritten(bytesWritten);
 }
 
 
