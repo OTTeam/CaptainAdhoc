@@ -19,12 +19,12 @@ class Client : public QObject
 public:
     Client(QTcpSocket *socket);
     Client(QHostAddress address);
-    Client(QTcpSocket *socket, QHostAddress dest, quint8 hopNumber);
+    Client(QTcpSocket *socket, QHostAddress dest, QHostAddress nextHop, quint8 hopNumber);
     ~Client();
     QHostAddress address();
     quint8 hopNumber();
     QTcpSocket *socket();
-    void UpdateRoute(QTcpSocket *,quint8);
+    void UpdateRoute(QTcpSocket *s,QHostAddress nextHop, quint8 newHopNumber);
     void connectSocket();
     void sendMessage();
 
