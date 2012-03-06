@@ -21,7 +21,9 @@ Client::Client(QTcpSocket *s)
     _nextHop = socket()->peerAddress();
     _hopNumber = 1;
 
-    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+//    qDebug() << "Client(QTCpSocket *)";
+//    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
 
 
     ConfigClient();
@@ -38,7 +40,7 @@ Client::Client(QTcpSocket *s, QHostAddress dest, QHostAddress nextHop, quint8 ho
     _nextHop = nextHop;
     _hopNumber = hopNumber;
 
-    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
+   qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
     ConfigClient();
 }
@@ -55,7 +57,7 @@ Client::Client(QHostAddress address)
     _dest = address;
 
 
-    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
 
     _hopNumber = 1;
@@ -66,6 +68,7 @@ Client::Client(QHostAddress address)
 void Client::ConfigClient()
 {
     connect(_socket, SIGNAL(connected()),         this, SIGNAL(Connected()));
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),         this, SIGNAL(SocketError()));
     connect(_socket, SIGNAL(disconnected()),      this, SIGNAL(Disconnected()));
     //connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
     _messageLength = 0;
@@ -107,7 +110,7 @@ Client::~Client()
         delete _fileToSend;
     }
 
-    qDebug() << "Deleting Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
+    qDebug() << "Deleted client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
     // on détruit le socket seulement si on est le next hop (pas si c'est une passerelle)
     if (_dest == _nextHop)
@@ -131,45 +134,41 @@ void Client::newBytesReceived()
     QDataStream in(_socket);
 
 
-    while (_socket->bytesAvailable()>0)
+    if (_messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
     {
-        if (_messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
-        {
-            if (_socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
-                return;
-
-             in >> _messageLength; // Si on a reçu la taille du message en entier, on la récupère
-
-        }
-
-        // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
-        if (_socket->bytesAvailable() < _messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        if (_socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
             return;
 
-        // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
-        quint16 type;
-        in >> type;
-        switch (type)
-        {
-        case FILE_REQUEST_INIT:
-            receivedFileRequestInit();
-            break;
-        case FILE_DATA:
-            receivedFileData();
-            break;
-        case FILE_REQUEST_ACK:
-            receivedFileRequestAck();
-            break;
-        case LIST_REQUEST:
-            receivedFileList();
-            break;
-        default:
-            break;
-        }
+         in >> _messageLength; // Si on a reçu la taille du message en entier, on la récupère
 
-        _messageLength = 0;
     }
 
+    // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
+    if (_socket->bytesAvailable() < _messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        return;
+
+    // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
+    quint16 type;
+    in >> type;
+    switch (type)
+    {
+    case FILE_REQUEST_INIT:
+        receivedFileRequestInit();
+        break;
+    case FILE_DATA:
+        receivedFileData();
+        break;
+    case FILE_REQUEST_ACK:
+        receivedFileRequestAck();
+        break;
+    case LIST_REQUEST:
+        receivedFileList();
+        break;
+    default:
+        break;
+    }
+
+    _messageLength = 0;
 }
 
 void Client::receivedFileRequest()
@@ -285,13 +284,13 @@ void Client::sendMessage()
     out << _dest.toString();
     out << _socket->localAddress().toString();
 
-    qDebug() << _dest.toString();
-    qDebug() << _socket->localAddress().toString();
+//    qDebug() << _dest.toString();
+//    qDebug() << _socket->localAddress().toString();
     posData = paquet.size();
     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
     headerSize = paquet.size();
 
-    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
+//    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
     out << type;           // typePaquet
     out << SendFilename;   // NomFichier
     out << SendFilesize;   //TailleFichier
@@ -310,16 +309,17 @@ void Client::sendMessage()
     _socket->write(paquet); // On envoie le paquet
 }
 
-void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd)
+void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteArray data)
 {
     // On commence par lire le paquet, sans l'interpréter.
     // On renvoie alors le paquet complet à notre next-hop
-    QDataStream in(_socket);
-    quint16 dataSize;
-    QByteArray data;
-    in >> dataSize;
-    data.resize(dataSize);
-    in.readRawData(data.data(),dataSize);
+//    QDataStream in(_socket);
+    quint16 dataSize = data.size();
+
+//    QByteArray data;
+//    in >> dataSize;
+//    data.resize(dataSize);
+//    in.readRawData(data.data(),dataSize);
 
 
     QByteArray paquetData;
