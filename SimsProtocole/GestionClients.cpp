@@ -39,11 +39,13 @@ void GestionClients::clientSent(int percentComplete)
 
 void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<RoutesTableElt> routes)
 {
-    qDebug()<< "********************************************" ;
-    qDebug()<< "newConnectionRequest" ;
+
+    qDebug() << "BROADCASTED" << routes.size() << "host(s) by" << broadcasterAddress.toString();
+//    qDebug()<< "********************************************" ;
+//    qDebug()<< "newConnectionRequest" ;
 
 
-    qDebug()<< "routes : " << routes.size();
+//    qDebug()<< "routes : " << routes.size();
 
     Client *broadcasterClient = NULL;
     // première étape : vérifier si l'envoyeur du broadcast est nouveau ou pas.
@@ -64,6 +66,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     //s'il nexiste pas, on le crée (on ne connecte pas le socket tout de suite, afin de pouvoir ajouter les autres entre temps
     if (broadCasterExists == false)
     {
+        qDebug() << "DICOVERED a client (received a broadcast)";
         broadcasterClient = new Client(broadcasterAddress);
         connect(broadcasterClient, SIGNAL(Connected()), this, SLOT(clientConnected()));
         connect(broadcasterClient->socket(), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clientConnectionFailed()));
@@ -99,6 +102,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         // si c'est une nouvelle route, on rajoute le client.
         if (routeExists == false)
         {
+            qDebug() << "DISCOVERED a client (in a broadcaster client list)";
             Client *client = new Client(broadcasterClient->socket(),newRoute.destAddr,broadcasterAddress, newRoute.hopNumber);
             connect(client, SIGNAL(Connected()), this, SLOT(clientConnected()));
             connect(client->socket(), SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(clientConnectionFailed()));
@@ -109,12 +113,13 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         broadcasterClient->connectSocket();
 
 
-    qDebug()<< "********************************************" ;
+//    qDebug()<< "********************************************" ;
 }
 
 
 void GestionClients::newConnectionDone(QTcpSocket *socket)
 {
+    qDebug() << "DISCOVERED a client (responded to our broadcast)";
     Client *client = new Client(socket);
     connect(client, SIGNAL(Connected()),this,SLOT(clientConnected()));
     NewClientConfig(client);

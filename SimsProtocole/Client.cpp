@@ -21,8 +21,7 @@ Client::Client(QTcpSocket *s)
     _nextHop = socket()->peerAddress();
     _hopNumber = 1;
 
-    qDebug() << "Client(QTCpSocket *)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
 
 
     ConfigClient();
@@ -39,8 +38,7 @@ Client::Client(QTcpSocket *s, QHostAddress dest, QHostAddress nextHop, quint8 ho
     _nextHop = nextHop;
     _hopNumber = hopNumber;
 
-    qDebug() << "Client(QTCpSocket *, QHostAddress, QHostAddress)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
 
     ConfigClient();
 }
@@ -57,8 +55,7 @@ Client::Client(QHostAddress address)
     _dest = address;
 
 
-    qDebug() << "Client(QHostAddress)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "New Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
 
 
     _hopNumber = 1;
@@ -110,7 +107,7 @@ Client::~Client()
         delete _fileToSend;
     }
 
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "Deleting Client - Dest:" << _dest.toString() << " - Passerelle :" << _nextHop.toString();
 
     // on détruit le socket seulement si on est le next hop (pas si c'est une passerelle)
     if (_dest == _nextHop)
