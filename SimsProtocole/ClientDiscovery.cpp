@@ -75,7 +75,7 @@ void ClientDiscovery::newDatagramAvailable()
         qDebug() << "***********************************";
         qDebug()<< ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" ;
 
-      //  if (localSent == false)
+       if (localSent == false)
             emit DatagramReceived(senderAddress,routesReceived);
 
     }
