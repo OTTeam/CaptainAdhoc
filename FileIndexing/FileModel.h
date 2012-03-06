@@ -8,7 +8,7 @@ class FileModel
 {
 public:
     FileModel();
-    FileModel(const QString& name, const QString& baseDir, const QString& dirPath, const QString& path);
+    FileModel(const QString& name, const QString& baseDir, const QString& dirPath, const QString& path, int size);
 
     int id() const { return _id; }
     void setId(int id) { _id = id; }
@@ -28,6 +28,9 @@ public:
     const QDateTime& indexTime() const { return _indexTime; }
     void setIndexTime(const QDateTime& indexTime) { _indexTime = indexTime; }
 
+    int size() const { return _size; }
+    void setSize(int size) { _size = size ; }
+
     QString toString() const;
 
 private:
@@ -37,6 +40,7 @@ private:
     QString _dirPath;
     QString _path;
     QDateTime _indexTime;
+    int _size;
 };
 
 std::ostream& operator<<(std::ostream& out, const FileModel& model);

@@ -68,6 +68,6 @@ QList<FileModel> FileIndexer::getAllIndexedFiles()
 bool FileIndexer::indexFile(const QFileInfo& fileInfo, const QDir& dir)
 {
     qDebug() << "Indexing file " << fileInfo.absoluteFilePath();
-    FileModel model(fileInfo.fileName(), dir.absolutePath(), fileInfo.absoluteDir().absolutePath(), fileInfo.absoluteFilePath());
+    FileModel model(fileInfo.fileName(), dir.absolutePath(), fileInfo.absoluteDir().absolutePath(), fileInfo.absoluteFilePath(), fileInfo.size());
     return _dao.insertFile(model);
 }
