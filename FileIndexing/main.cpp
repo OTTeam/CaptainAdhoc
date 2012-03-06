@@ -35,8 +35,9 @@ static void testIndexing(QCoreApplication& a)
     QTime time;
     time.start();
 
-    FileIndexer indexer(db);
+    FileIndexer indexer(db, true);
     indexer.addDirectory("C:/temp/test_sqlite/test_filesystem");
+//    indexer.addDirectory("C:/Windows");
 //    indexer.addDirectory("C:/Qt/2009.02/qt/src/sql");
 //    QStringList nameFilters;
 //    nameFilters << "*.cpp" << "*.h";
@@ -52,8 +53,10 @@ static void testIndexing(QCoreApplication& a)
 
     FileModel file;
     bool result = dao.getFile(1, file);
-    if (result)
+    if (result) {
         qDebug() << "file :" << file;
+        qDebug() << "file (simple) : " << file.toSimpleFileModel();
+    }
 
     list = indexer.searchFiles("fileindexer");
     printFileNames(list);
@@ -77,6 +80,46 @@ static void testMd5Hash()
     qDebug() << FileUtils::fileMd5Hash(path);
 }
 
+static void testDataStream()
+{
+    SimpleFileModel model(1, "test.exe", "exe", 100);
+    qDebug() << "before write : " << model;
+    QFile file("testDataStream");
+    file.open(QFile::WriteOnly);
+
+    QDataStream stream(&file);
+    stream << model;
+
+    file.close();
+    file.open(QFile::ReadOnly);
+    stream.setDevice(&file);
+    SimpleFileModel inModel;
+    stream >> inModel;
+
+    qDebug() << "after read : " << inModel;
+
+    //Test écriture liste
+    FileIndexer indexer(QSqlDatabase::database("fileDb"), false);
+    QList<SimpleFileModel> files = indexer.getSharedFiles();
+    foreach (SimpleFileModel sfm, files) {
+        qDebug() << sfm;
+    }
+    QFile testFileList("testFileList");
+    testFileList.open(QFile::WriteOnly);
+    stream.setDevice(&testFileList);
+    stream << files;
+
+    testFileList.close();
+    testFileList.open(QFile::ReadOnly);
+    stream.setDevice(&testFileList);
+    QList<SimpleFileModel> newList;
+    stream >> newList;
+    qDebug() << "list size =" << newList.size();
+//    foreach (SimpleFileModel sfm, newList) {
+//        qDebug() << sfm;
+//    }
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -86,6 +129,7 @@ int main(int argc, char *argv[])
 
     testIndexing(a);
 //    testMd5Hash();
+    testDataStream();
 
     qDebug("Execution time : %fs", time.elapsed() / 1000.);
 

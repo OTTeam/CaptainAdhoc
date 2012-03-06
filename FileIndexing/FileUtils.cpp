@@ -12,7 +12,9 @@ QString FileUtils::fileMd5Hash(QString path)
     QByteArray block(BLOCK_SIZE, 0);
     QCryptographicHash hash(QCryptographicHash::Md5);
     QFile file(path);
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly)) {
+        return "";
+    }
     block = file.read(BLOCK_SIZE);
     while (!block.isEmpty()) {
         hash.addData(block);

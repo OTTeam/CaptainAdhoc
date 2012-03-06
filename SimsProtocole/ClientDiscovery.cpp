@@ -59,6 +59,7 @@ void ClientDiscovery::newDatagramAvailable()
             // on incrémente le hop number car on a la passerelle en plus
             newElt.hopNumber++;
             if (newElt.destAddr != _socket->localAddress() && !hostInfo.addresses().contains(newElt.destAddr))
+
             {     routesReceived.push_back(newElt);
 //                qDebug() << "AddressStr :" << destAddrStr << "Address :" << newElt.destAddr << " -- Hop :" << newElt.hopNumber;
             }
@@ -102,7 +103,9 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
 
 //    qDebug()<< "BS---------------------------------------" ;
 //    qDebug()<< "BROADCAST SEND" ;
-    qDebug() << "BROADCASTING...";
+
+    qDebug() << "BROADCASTING" << routesList.size() << "hosts";
+
     out << (quint16) routesList.size();
 //    qDebug()<< "routesList Count : " << routesList.count();
     foreach(Client *client, routesList)
