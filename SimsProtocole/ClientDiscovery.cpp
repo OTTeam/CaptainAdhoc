@@ -46,14 +46,20 @@ void ClientDiscovery::newDatagramAvailable()
         for(int i = 0; i<RouteListSize; i++)
         {
             RoutesTableElt newElt;
-            in >> newElt.destAddr;
+
+            QString destAddrStr;
+
+
+            in >> destAddrStr;
             in >> newElt.hopNumber;
+
+            newElt.destAddr = destAddrStr;
 
             // on incrémente le hop number car on a la passerelle en plus
             newElt.hopNumber++;
 
             routesReceived.push_back(newElt);
-            //qDebug() << "Address :" << newElt.destAddr.toString() << " -- Hop :" << newElt.hopNumber;
+            qDebug() << "Address :" << newElt.destAddr << " -- Hop :" << newElt.hopNumber;
 
         }
 

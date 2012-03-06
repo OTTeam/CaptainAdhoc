@@ -41,6 +41,8 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
 {
     qDebug()<< "********************************************" ;
     qDebug()<< "newConnectionRequest" ;
+
+
     qDebug()<< "routes : " << routes.size();
 
     Client *broadcasterClient = NULL;
@@ -71,6 +73,9 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
     // ensuite, on rajoute toutes les routes en mettant le noeud en nextHop
     foreach(RoutesTableElt newRoute, routes)
     {
+
+        qDebug()<< newRoute.destAddr << " hopNb :" << newRoute.hopNumber;
+
         bool routeExists= false;
         //qDebug()<< "route :" << newRoute.destAddr.toString() << "hop :" << newRoute.hopNumber;
         //parcourt des clients pour retrouver la route.
