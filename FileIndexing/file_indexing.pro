@@ -11,8 +11,10 @@ SOURCES += main.cpp \
     FileIndexDao.cpp \
     FileModel.cpp \
     FileIndexer.cpp \
-    FileUtils.cpp
+    FileUtils.cpp \
+    SimpleFileModel.cpp
 HEADERS += FileIndexDao.h \
     FileModel.h \
     FileIndexer.h \
-    FileUtils.h
+    FileUtils.h \
+    SimpleFileModel.h

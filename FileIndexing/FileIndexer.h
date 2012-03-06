@@ -9,8 +9,8 @@
 class FileIndexer
 {
 public:
-    FileIndexer();
-    FileIndexer(QSqlDatabase db);
+    FileIndexer(bool computeHash = false);
+    FileIndexer(QSqlDatabase db, bool computeHash = false);
 
     bool addDirectory(QDir dir);
     bool addDirectory(const QString& path);
@@ -19,16 +19,22 @@ public:
 
     QList<FileModel> getAllIndexedFiles();
 
+    QList<SimpleFileModel> getSharedFiles();
+
     QList<FileModel> searchFiles(QString keyword);
 
     void setDatabase(QSqlDatabase db) { _dao.setDatabase(db); }
 
     void setNameFilters(const QStringList& nameFilters) { _nameFilters = nameFilters; }
 
+    bool isComputeHash() const { return _computeHash; }
+    void setComputeHash(bool computeHash) { _computeHash = computeHash; }
+
 private:
     FileIndexDao _dao;
     QList<QDir> _directories;
     QStringList _nameFilters;
+    bool _computeHash;
 
     qint32 indexDirectory(const QDir& dir);
 
