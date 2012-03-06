@@ -40,6 +40,7 @@ private slots:
     void clientDisconnect();
     void clientConnectionFailed();
     void clientConnected();
+    void NewClientConfig(Client *client);
 
     void uploadSpeedUpdate(int);
     void downloadSpeedUpdate(int);

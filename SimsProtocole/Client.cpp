@@ -32,6 +32,7 @@ Client::Client(QTcpSocket *s, QHostAddress dest, quint8 hopNumber)
 {
     _socket = s;
     _dest = dest;
+    _nextHop = _socket->peerAddress();
     _hopNumber = hopNumber;
 
     ConfigClient();
@@ -46,6 +47,7 @@ Client::Client(QHostAddress address)
     _socket = new QTcpSocket(this);
     ConfigClient();
     _nextHop = address;
+    _dest = address;
     _hopNumber = 1;
     //_socket->connectToHost(address,PORT_SERVEUR);
 }
@@ -55,7 +57,7 @@ void Client::ConfigClient()
 {
     connect(_socket, SIGNAL(connected()),         this, SIGNAL(Connected()));
     connect(_socket, SIGNAL(disconnected()),      this, SIGNAL(Disconnected()));
-    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
+    //connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
     _messageLength = 0;
     _etat = IDLE;
 
@@ -265,11 +267,14 @@ void Client::sendMessage()
     out << (quint16) 0;
     out << _dest.toString();
     out << _socket->localAddress().toString();
-    posData = out.device()->pos();
 
+    qDebug() << _dest.toString();
+    qDebug() << _socket->localAddress().toString();
+    posData = paquet.size();
     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
     headerSize = paquet.size();
 
+    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
     out << type;           // typePaquet
     out << SendFilename;   // NomFichier
     out << SendFilesize;   //TailleFichier
@@ -364,7 +369,7 @@ void Client::newBytesWritten(qint64 bytes)
 
 QHostAddress Client::address()
 {
-    return _socket->peerAddress();
+    return _dest;
 }
 
 quint8 Client::hopNumber()

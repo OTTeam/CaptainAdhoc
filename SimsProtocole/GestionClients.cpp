@@ -87,9 +87,10 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
                 break;
             }
         }
+
         //qDebug() << "routeExists :" << routeExists;
         // si c'est une nouvelle route, on rajoute le client.
-        if (!routeExists)
+        if (routeExists == false)
         {
             Client *client = new Client(broadcasterClient->socket(),newRoute.destAddr,newRoute.hopNumber);
             connect(client, SIGNAL(Connected()), this, SLOT(clientConnected()));
@@ -97,7 +98,7 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
         }
     }
     // si on a créé un nouveau broadcaster, on doit connecter son socket.
-    if ( !broadCasterExists)
+    if ( broadCasterExists == false )
         broadcasterClient->connectSocket();
 
 
@@ -109,20 +110,31 @@ void GestionClients::newConnectionDone(QTcpSocket *socket)
 {
     Client *client = new Client(socket);
     connect(client, SIGNAL(Connected()),this,SLOT(clientConnected()));
+    NewClientConfig(client);
 }
 
 
 void GestionClients::clientConnected()
 {
     Client *client = (Client *) sender();
-    connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
-    connect(client,SIGNAL(BytesSentUpdate(int))    , this, SLOT(clientSent(int)));
-    connect(client,SIGNAL(Disconnected())          , this, SLOT(clientDisconnect()));
+
+    disconnect(client,SIGNAL(Disconnected())       , this, SLOT(clientConnectionFailed()));
+    connect(client,   SIGNAL(Disconnected())       , this, SLOT(clientDisconnect()));
+
+    NewClientConfig(client);
+}
+
+void GestionClients::NewClientConfig(Client *client)
+{
     connect(client,SIGNAL(DownloadSpeedUpdate(int)), this, SLOT(downloadSpeedUpdate(int)));
     connect(client,SIGNAL(UploadSpeedUpdate(int))  , this, SLOT(uploadSpeedUpdate(int)));
+    connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
+    connect(client,SIGNAL(BytesSentUpdate(int))    , this, SLOT(clientSent(int)));
+
 
     connect(client->socket(),SIGNAL(readyRead()),this,SLOT(clientBytesAvailable()));
     connect(client->socket(),SIGNAL(bytesWritten(qint64)),this,SLOT(clientBytesWritten(qint64)));
+
     _clients.push_back(client);
 
     // si c'est un nouveau socket, on le rajoute dans notre table de référence.
@@ -135,6 +147,7 @@ void GestionClients::clientConnected()
     }
     emit ClientNumberChanged(_clients.size());
 }
+
 
 
 void GestionClients::uploadSpeedUpdate(int bytesPerSec)
@@ -161,6 +174,7 @@ void GestionClients::broadCastTrigger()
 void GestionClients::clientConnectionFailed()
 {
     Client *client = (Client *)sender();
+
     //on détruit juste le client
     delete client;
 
@@ -195,7 +209,6 @@ void GestionClients::clientBytesAvailable()
 
     SocketsHandlers *socketHandler = findSocketHandler(senderSocket);
 
-
     QDataStream in(senderSocket);
 
     QHostAddress destAdd;
@@ -208,19 +221,31 @@ void GestionClients::clientBytesAvailable()
 
         in >> socketHandler->paquetSize;
 
-
-
         // si le paquet n'est pas entier, on passe
         if (senderSocket->bytesAvailable() < socketHandler->paquetSize)
             return;
 
         // sinon, on lit les adresses de source et Destination pour savoir ce qu'il faut en faire
+        QString destAddStr;
+        QString senderAddStr;
 
-        in >> destAdd;
-        in >> senderAdd;
+        in >> destAddStr;
+        in >> senderAddStr;
 
+        destAdd = destAddStr;
+        senderAdd = senderAddStr;
         // si nous sommes l'objectif, on appelle le bon client pour qu'il lise le paquet
         //
+
+
+        qDebug() << destAddStr;
+
+        qDebug() << senderAddStr;
+
+        qDebug() << senderSocket->localAddress();
+
+        in.device()->close();
+
         if (destAdd == senderSocket->localAddress())
         {
             // on trouve le client connecté à l'adresse de l'envoyeur.
@@ -232,6 +257,7 @@ void GestionClients::clientBytesAvailable()
         {
             // le paquet ne nous est pas destiné. on récupère donc la passerelle et on lui demande de faire suivre
             Client *client = findClientByDest(destAdd);
+
             client->ForwardMessage(senderAdd, destAdd);
         }
 
