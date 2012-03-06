@@ -21,6 +21,10 @@ Client::Client(QTcpSocket *s)
     _nextHop = socket()->peerAddress();
     _hopNumber = 1;
 
+    qDebug() << "Client(QTCpSocket *)";
+    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+
+
     ConfigClient();
     emit Connected();
 }
@@ -28,12 +32,15 @@ Client::Client(QTcpSocket *s)
 /*
  * Constructeur appelé lors de l'ajout d'un client
  */
-Client::Client(QTcpSocket *s, QHostAddress dest, quint8 hopNumber)
+Client::Client(QTcpSocket *s, QHostAddress dest, QHostAddress nextHop, quint8 hopNumber)
 {
     _socket = s;
     _dest = dest;
-    _nextHop = _socket->peerAddress();
+    _nextHop = nextHop;
     _hopNumber = hopNumber;
+
+    qDebug() << "Client(QTCpSocket *, QHostAddress, QHostAddress)";
+    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
 
     ConfigClient();
 }
@@ -48,6 +55,12 @@ Client::Client(QHostAddress address)
     ConfigClient();
     _nextHop = address;
     _dest = address;
+
+
+    qDebug() << "Client(QHostAddress)";
+    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+
+
     _hopNumber = 1;
     //_socket->connectToHost(address,PORT_SERVEUR);
 }
@@ -77,6 +90,10 @@ void Client::ConfigClient()
     _timerUlSpeed->setInterval(500);
     //timerUlSpeed->start();
     _timerUlSpeed->setSingleShot(false);
+
+
+    _fileToSend = NULL;
+    _fileToReceive = NULL;
 }
 
 
@@ -92,6 +109,9 @@ Client::~Client()
         _fileToSend->close();
         delete _fileToSend;
     }
+
+    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+
     // on détruit le socket seulement si on est le next hop (pas si c'est une passerelle)
     if (_dest == _nextHop)
         delete _socket;
@@ -382,9 +402,10 @@ QTcpSocket *Client::socket()
     return _socket;
 }
 
-void Client::UpdateRoute(QTcpSocket *s,quint8 newHopNumber)
+void Client::UpdateRoute(QTcpSocket *s,QHostAddress nextHop, quint8 newHopNumber)
 {
     _socket = s;
+    _nextHop = nextHop;
     _hopNumber = newHopNumber;
 }
 
