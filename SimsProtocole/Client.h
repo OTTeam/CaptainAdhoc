@@ -47,6 +47,7 @@ signals:
     void UploadSpeedUpdate(int);
 
     void Connected();
+    void SocketError();
     void Disconnected();
 
 public slots:
