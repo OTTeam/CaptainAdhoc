@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network sql
 
 TARGET = CaptainAdhoc
 TEMPLATE = app
@@ -22,7 +22,11 @@ SOURCES += main.cpp\
     SecuritySettings.cpp \
     WifiInterface.cpp \
     WifiNetwork.cpp \
-    WifiConnection.cpp
+    WifiConnection.cpp \
+	FileIndexDao.cpp \
+    FileModel.cpp \
+    FileIndexer.cpp
+	
 
 HEADERS  += MainWindow.h \
     ServeurTCP.h \
@@ -36,7 +40,10 @@ HEADERS  += MainWindow.h \
     SecuritySettings.h \
     WifiInterface.h \
     WifiNetwork.h \
-    WifiConnection.h
+    WifiConnection.h \
+	FileIndexDao.h \
+    FileModel.h \
+    FileIndexer.h
 
 
 win32: LIBS += -L"C:/Program Files/Microsoft SDKs/Windows/v7.1/Lib/" -lwlanapi

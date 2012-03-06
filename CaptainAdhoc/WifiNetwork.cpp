@@ -5,6 +5,7 @@
 #include <adhoc.h>
 #include <iostream>
 #include <OCIdl.h>
+#include "utils.h"
 
 WifiNetwork::WifiNetwork(IDot11AdHocNetwork * network)
 {
