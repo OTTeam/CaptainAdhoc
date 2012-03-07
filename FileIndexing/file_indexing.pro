@@ -10,7 +10,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     FileIndexDao.cpp \
     FileModel.cpp \
-    FileIndexer.cpp
+    FileIndexer.cpp \
+    FileUtils.cpp \
+    SimpleFileModel.cpp
 HEADERS += FileIndexDao.h \
     FileModel.h \
-    FileIndexer.h
+    FileIndexer.h \
+    FileUtils.h \
+    SimpleFileModel.h

@@ -1,12 +1,14 @@
-#include "FileIndexer.h"
 #include <QDebug>
 #include <QDirIterator>
 
-FileIndexer::FileIndexer() : _dao(QSqlDatabase::database())
+#include "FileIndexer.h"
+#include "FileUtils.h"
+
+FileIndexer::FileIndexer(bool computeHash) : _dao(QSqlDatabase::database()), _computeHash(computeHash)
 {
 }
 
-FileIndexer::FileIndexer(QSqlDatabase db) : _dao(db)
+FileIndexer::FileIndexer(QSqlDatabase db, bool computeHash) : _dao(db), _computeHash(computeHash)
 {
 }
 
@@ -65,9 +67,19 @@ QList<FileModel> FileIndexer::getAllIndexedFiles()
     return _dao.getAllFiles();
 }
 
+QList<SimpleFileModel> FileIndexer::getSharedFiles()
+{
+    QList<FileModel> list = getAllIndexedFiles();
+    QList<SimpleFileModel> files;
+    foreach (FileModel model, list) {
+        files << model.toSimpleFileModel();
+    }
+    return files;
+}
+
 bool FileIndexer::indexFile(const QFileInfo& fileInfo, const QDir& dir)
 {
     qDebug() << "Indexing file " << fileInfo.absoluteFilePath();
-    FileModel model(fileInfo.fileName(), dir.absolutePath(), fileInfo.absoluteDir().absolutePath(), fileInfo.absoluteFilePath());
+    FileModel model(fileInfo.fileName(), dir.absolutePath(), fileInfo.absoluteDir().absolutePath(), fileInfo.absoluteFilePath(), fileInfo.size(), _computeHash ? FileUtils::fileMd5Hash(fileInfo.absoluteFilePath()) : "");
     return _dao.insertFile(model);
 }
