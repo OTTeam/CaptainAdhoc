@@ -21,8 +21,9 @@ Client::Client(QTcpSocket *s)
     _nextHop = socket()->peerAddress();
     _hopNumber = 1;
 
-    qDebug() << "Client(QTCpSocket *)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+//    qDebug() << "Client(QTCpSocket *)";
+//    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
 
 
     ConfigClient();
@@ -39,8 +40,7 @@ Client::Client(QTcpSocket *s, QHostAddress dest, QHostAddress nextHop, quint8 ho
     _nextHop = nextHop;
     _hopNumber = hopNumber;
 
-    qDebug() << "Client(QTCpSocket *, QHostAddress, QHostAddress)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+   qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
     ConfigClient();
 }
@@ -57,8 +57,7 @@ Client::Client(QHostAddress address)
     _dest = address;
 
 
-    qDebug() << "Client(QHostAddress)";
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
 
     _hopNumber = 1;
@@ -111,7 +110,7 @@ Client::~Client()
         delete _fileToSend;
     }
 
-    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
+    qDebug() << "Deleted client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
 
     // on détruit le socket seulement si on est le next hop (pas si c'est une passerelle)
     if (_dest == _nextHop)
@@ -285,13 +284,13 @@ void Client::sendMessage()
     out << _dest.toString();
     out << _socket->localAddress().toString();
 
-    qDebug() << _dest.toString();
-    qDebug() << _socket->localAddress().toString();
+//    qDebug() << _dest.toString();
+//    qDebug() << _socket->localAddress().toString();
     posData = paquet.size();
     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
     headerSize = paquet.size();
 
-    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
+//    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
     out << type;           // typePaquet
     out << SendFilename;   // NomFichier
     out << SendFilesize;   //TailleFichier
@@ -310,16 +309,17 @@ void Client::sendMessage()
     _socket->write(paquet); // On envoie le paquet
 }
 
-void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd)
+void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteArray data)
 {
     // On commence par lire le paquet, sans l'interpréter.
     // On renvoie alors le paquet complet à notre next-hop
-    QDataStream in(_socket);
-    quint16 dataSize;
-    QByteArray data;
-    in >> dataSize;
-    data.resize(dataSize);
-    in.readRawData(data.data(),dataSize);
+//    QDataStream in(_socket);
+    quint16 dataSize = data.size();
+
+//    QByteArray data;
+//    in >> dataSize;
+//    data.resize(dataSize);
+//    in.readRawData(data.data(),dataSize);
 
 
     QByteArray paquetData;

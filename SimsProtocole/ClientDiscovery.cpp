@@ -44,6 +44,8 @@ void ClientDiscovery::newDatagramAvailable()
         QList<RoutesTableElt> routesReceived;
         routesReceived.clear();
 
+        QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
+
         for(int i = 0; i<RouteListSize; i++)
         {
             RoutesTableElt newElt;
@@ -56,7 +58,8 @@ void ClientDiscovery::newDatagramAvailable()
 
             // on incrémente le hop number car on a la passerelle en plus
             newElt.hopNumber++;
-            if (newElt.destAddr != _socket->localAddress())
+            if (newElt.destAddr != _socket->localAddress() && !hostInfo.addresses().contains(newElt.destAddr))
+
             {     routesReceived.push_back(newElt);
 //                qDebug() << "AddressStr :" << destAddrStr << "Address :" << newElt.destAddr << " -- Hop :" << newElt.hopNumber;
             }
@@ -64,7 +67,6 @@ void ClientDiscovery::newDatagramAvailable()
         }
 
 
-        QHostInfo hostInfo = QHostInfo::fromName(QHostInfo::localHostName());
         bool localSent = false;
 //        qDebug() << "************* Local ***************";
         foreach (QHostAddress add, hostInfo.addresses())
@@ -101,6 +103,9 @@ void ClientDiscovery::sendNewDatagram(QList<Client *> routesList )
 
 //    qDebug()<< "BS---------------------------------------" ;
 //    qDebug()<< "BROADCAST SEND" ;
+
+    qDebug() << "BROADCASTING" << routesList.size() << "hosts";
+
     out << (quint16) routesList.size();
 //    qDebug()<< "routesList Count : " << routesList.count();
     foreach(Client *client, routesList)
