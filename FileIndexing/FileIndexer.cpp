@@ -4,11 +4,11 @@
 #include "FileIndexer.h"
 #include "FileUtils.h"
 
-FileIndexer::FileIndexer(bool computeHash) : _dao(QSqlDatabase::database()), _computeHash(computeHash)
+FileIndexer::FileIndexer(bool computeHash) : _dao(QSqlDatabase::database()), _folderDao(QSqlDatabase::database()), _computeHash(computeHash)
 {
 }
 
-FileIndexer::FileIndexer(QSqlDatabase db, bool computeHash) : _dao(db), _computeHash(computeHash)
+FileIndexer::FileIndexer(QSqlDatabase db, bool computeHash) : _dao(db), _folderDao(db), _computeHash(computeHash)
 {
 }
 
@@ -51,6 +51,9 @@ QList<FileModel> FileIndexer::searchFiles(QString keyword)
 qint32 FileIndexer::indexDirectory(const QDir& dir)
 {
     qint32 count = 0;
+    FolderModel folder;
+    folder.setPath(dir.absolutePath());
+    _folderDao.insertFolder(folder);
     QDirIterator it(dir.absolutePath(), _nameFilters, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString path = it.next();

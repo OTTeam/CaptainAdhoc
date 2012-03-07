@@ -28,6 +28,17 @@ static bool createDatabase()
         qCritical(qPrintable(db.lastError().text()));
         return false;
     }
+
+    if (!FileIndexDao::createTable(db, true)) {
+        qCritical(qPrintable(db.lastError().text()));
+        return false;
+    }
+
+    if (!FolderDao::createTable(db, true)) {
+        qCritical(qPrintable(db.lastError().text()));
+        return false;
+    }
+
     return true;
 }
 
@@ -35,18 +46,13 @@ static void testIndexing(QCoreApplication& a)
 {
     QSqlDatabase db = QSqlDatabase::database("fileDb");
 
-    if (!FileIndexDao::createTable(db, true)) {
-        qCritical(qPrintable(db.lastError().text()));
-        a.quit();
-    }
-
     QTime time;
     time.start();
 
     FileIndexer indexer(db, true);
-    indexer.addDirectory("C:/temp/test_sqlite/test_filesystem");
-//    indexer.addDirectory("C:/Windows");
-//    indexer.addDirectory("C:/Qt/2009.02/qt/src/sql");
+    indexer.addDirectory("E:/SIMS/git-repo/CaptainAdhoc");
+    indexer.addDirectory("E:/SIMS/git-repo/FileIndexing");
+
 //    QStringList nameFilters;
 //    nameFilters << "*.cpp" << "*.h";
 //    indexer.setNameFilters(nameFilters);
@@ -132,22 +138,17 @@ static void testFolderDao()
 {
     QSqlDatabase db = QSqlDatabase::database("fileDb");
 
-    if (!FolderDao::createTable(db, true)) {
-        qDebug() << db.lastError().number() << db.lastError().text();
-        qCritical(qPrintable(db.lastError().text()));
-        return;
-    }
-
     FolderModel folder;
     folder.setPath("C:/");
 
     FolderDao dao(db);
     qDebug() << "Insertion";
     dao.insertFolder(folder);
-    qDebug() << folder;
 
     QList<FolderModel *> folders = dao.getAllFolders();
-    qDebug() << *(folders.at(0));
+    foreach (FolderModel* folder, folders) {
+        qDebug() << *folder;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -160,7 +161,7 @@ int main(int argc, char *argv[])
     QTime time;
     time.start();
 
-//    testIndexing(a);
+    testIndexing(a);
 //    testMd5Hash();
 //    testDataStream();
     testFolderDao();
