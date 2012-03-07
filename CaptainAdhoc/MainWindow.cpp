@@ -1,8 +1,6 @@
 #include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include <iostream>
-using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -13,36 +11,36 @@ MainWindow::MainWindow(QWidget *parent)
     /*
  * Mise en place de l'UI
  */
-    lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
-    btconnect = new QPushButton("Connexion",this);
-    btdisconnect = new QPushButton("Déconnexion",this);
-    sendHello = new QPushButton("Envoi d'un fichiers",this);
+    _lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
+    _btconnect = new QPushButton("Connexion",this);
+    _btdisconnect = new QPushButton("Déconnexion",this);
+    _sendHello = new QPushButton("Envoi d'un fichiers",this);
 
-    progressBar = new QProgressBar(this);
-    progressBar->setMinimum(0);
-    progressBar->setMaximum(100);
-    lbDlSpeed = new QLabel("",this);
+    _progressBar = new QProgressBar(this);
+    _progressBar->setMinimum(0);
+    _progressBar->setMaximum(100);
+    _lbDlSpeed = new QLabel("",this);
 
     _wifi = new WifiConnection();
 
     connect( _wifi, SIGNAL(ConnectionStatusChanged(int)), this, SLOT(onConnectionStatusChanged(int)) );
     connect( _wifi, SIGNAL(ConnectionFail(int)), this, SLOT(onConnectionFail(int)) );
-    connect( btconnect, SIGNAL(clicked()), _wifi, SLOT(Connect()) );
-    connect( btdisconnect, SIGNAL(clicked()), _wifi, SLOT(Disconnect()) );
-    connect( sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
+    connect( _btconnect, SIGNAL(clicked()), _wifi, SLOT(Connect()) );
+    connect( _btdisconnect, SIGNAL(clicked()), _wifi, SLOT(Disconnect()) );
+    connect( _sendHello, SIGNAL(clicked()), this, SLOT(HelloClicked()) );
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(lbNbClients);
-    layout->addWidget(btconnect);
-    layout->addWidget(btdisconnect);
-    btdisconnect->setEnabled(false);
-    layout->addWidget(sendHello);
-    sendHello->setEnabled(false);
+    layout->addWidget(_lbNbClients);
+    layout->addWidget(_btconnect);
+    layout->addWidget(_btdisconnect);
+    _btdisconnect->setEnabled(false);
+    layout->addWidget(_sendHello);
+    _sendHello->setEnabled(false);
 
     QHBoxLayout *dlLayout = new QHBoxLayout();
 
-    dlLayout->addWidget(progressBar);
-    dlLayout->addWidget(lbDlSpeed);
+    dlLayout->addWidget(_progressBar);
+    dlLayout->addWidget(_lbDlSpeed);
 
     layout->addLayout(dlLayout);
     this->setLayout(layout);
@@ -52,10 +50,14 @@ MainWindow::MainWindow(QWidget *parent)
      */
     _gestionnaire = new GestionClients(this);
 
-    connect(this,SIGNAL(InitiateConnection(QHostAddress)),_gestionnaire,SLOT(newConnectionRequest(QHostAddress)));
-    connect(_gestionnaire,SIGNAL(TransfertUpdate(int)),this,SLOT(UpdateProgress(int)));
-    connect(_gestionnaire,SIGNAL(ClientNumberChanged(int)),this,SLOT(UpdateClientsNumber(int)));
-    connect(_gestionnaire,SIGNAL(NetworkSpeedUpdate(int)),this,SLOT(UpdateDlSpeed(int)));
+    connect(this, SIGNAL(InitiateConnection(QHostAddress)), _gestionnaire, SLOT(newConnectionRequest(QHostAddress)));
+    connect(_gestionnaire, SIGNAL(ClientNumberChanged(int)), this, SLOT(UpdateClientsNumber(int)));
+
+    connect(_gestionnaire, SIGNAL(ClientDownloadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
+    connect(_gestionnaire, SIGNAL(ClientUploadUpdate(Client *, int)) , this, SLOT(UpdateClientProgress(Client *, int)));
+
+    connect(_gestionnaire, SIGNAL(ClientDownloadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
+    connect(_gestionnaire, SIGNAL(ClientUploadSpeedUpdate(Client *, int)) , this, SLOT(UpdateDlSpeed(Client*, int)));
 }
 
 MainWindow::~MainWindow()
@@ -77,31 +79,34 @@ void MainWindow::UpdateClientsNumber(int nbClients)
 {
     QString text = "Nombre de clients connectés : <strong>";
     text += QString::number(nbClients) + "</strong>";
-    lbNbClients->setText(text);
+    _lbNbClients->setText(text);
+}
+
+void MainWindow::UpdateClientProgress(Client *client, int Progress)
+{
+    Q_UNUSED(client)
+    _progressBar->setValue(Progress);
 }
 
 
-void MainWindow::UpdateProgress(int Progress)
+void MainWindow::UpdateDlSpeed(Client *client, int bytesPerSec)
 {
-    progressBar->setValue(Progress);
-}
-
-
-void MainWindow::UpdateDlSpeed(int bytesPerSec)
-{
+    Q_UNUSED(client)
     QString text;
-    if (bytesPerSec > 10000)
+    if (bytesPerSec > 1000000)
     {
+        double dbytesPerSec = bytesPerSec;
+        text = QString::number(dbytesPerSec/1000000,'f',1) + " Mo/s";
     }else  if (bytesPerSec > 10000)
     {
-        text = QString::number(bytesPerSec/1000) + "Kb/s";
+        text = QString::number(bytesPerSec/1000) + " Ko/s";
     }
     else
     {
-        text = QString::number(bytesPerSec) + "b/s";
+        text = QString::number(bytesPerSec) + " o/s";
     }
 
-    lbDlSpeed->setText(text);
+    _lbDlSpeed->setText(text);
 }
 
 
@@ -112,23 +117,23 @@ void MainWindow::onConnectionStatusChanged(int status)
     {
     case FORMED:
         qDebug() << "Notification received : network formed";
-        btconnect->setEnabled(false);
-        btdisconnect->setEnabled(true);
-        sendHello->setEnabled(true);
+        _btconnect->setEnabled(false);
+        _btdisconnect->setEnabled(true);
+        _sendHello->setEnabled(true);
         //TODO : lancer le broadcast
         break;
     case CONNECTED:
         qDebug() << "Notification received : connected to network";
-        btconnect->setEnabled(false);
-        btdisconnect->setEnabled(true);
-        sendHello->setEnabled(true);
+        _btconnect->setEnabled(false);
+        _btdisconnect->setEnabled(true);
+        _sendHello->setEnabled(true);
         //TODO : lancer le broadcast
         break;
     case DISCONNECTED:
         qDebug() << "Notification received : disconnected from network";
-        btconnect->setEnabled(true);
-        btdisconnect->setEnabled(false);
-        sendHello->setEnabled(false);
+        _btconnect->setEnabled(true);
+        _btdisconnect->setEnabled(false);
+        _sendHello->setEnabled(false);
         //TODO : arreter le broadcast
         break;
     }

@@ -24,18 +24,18 @@ signals:
 private slots:
     void HelloClicked();
     void UpdateClientsNumber(int);
-    void UpdateProgress(int);
-    void UpdateDlSpeed(int);
+    void UpdateClientProgress(Client *, int);
+    void UpdateDlSpeed(Client *, int);
     void onConnectionStatusChanged(int);
     void onConnectionFail(int);
 
 private:
-    QPushButton *btconnect;
-    QPushButton *btdisconnect;
-    QPushButton *sendHello;
-    QProgressBar *progressBar;
-    QLabel *lbNbClients;
-    QLabel *lbDlSpeed;
+    QPushButton *_btconnect;
+    QPushButton *_btdisconnect;
+    QPushButton *_sendHello;
+    QProgressBar *_progressBar;
+    QLabel *_lbNbClients;
+    QLabel *_lbDlSpeed;
 
     GestionClients *_gestionnaire;
     WifiConnection *_wifi;
