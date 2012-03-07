@@ -117,7 +117,6 @@ void GestionClients::newConnectionRequest(QHostAddress broadcasterAddress,QList<
 
             if (broadCasterExists)
                 NewClientConfig(client);
-
         }
     }
     // si on a créé un nouveau broadcaster, on doit connecter son socket.
@@ -165,9 +164,7 @@ void GestionClients::clientConnected()
 void GestionClients::NewClientConfig(Client *client)
 {
     connect(client,   SIGNAL(Disconnected())       , this, SLOT(clientDisconnect()));
-
     disconnect(client,SIGNAL(SocketError()),this,SLOT(clientConnectionFailed()));
-
     connect(client,SIGNAL(DownloadSpeedUpdate(int)), this, SLOT(downloadSpeedUpdate(int)));
     connect(client,SIGNAL(UploadSpeedUpdate(int))  , this, SLOT(uploadSpeedUpdate(int)));
     connect(client,SIGNAL(BytesReceivedUpdate(int)), this, SLOT(clientReceived(int)));
@@ -290,7 +287,6 @@ void GestionClients::clientBytesAvailable()
 
         socketHandler->paquetSize = 0;
         // si nous sommes l'objectif, on appelle le bon client pour qu'il lise le paquet
-
         if (destAdd == senderSocket->localAddress())
         {
             // on trouve le client connecté à l'adresse de l'envoyeur.

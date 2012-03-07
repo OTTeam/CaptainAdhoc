@@ -28,7 +28,7 @@ public:
     void connectSocket();
     void sendMessage();
 
-    void ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd);
+    void ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteArray data);
 private:
     void ConfigClient();
 
