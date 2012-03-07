@@ -30,7 +30,6 @@ private slots:
     void onConnectionFail(int);
 
 private:
-    QLineEdit *address;
     QPushButton *btconnect;
     QPushButton *btdisconnect;
     QPushButton *sendHello;

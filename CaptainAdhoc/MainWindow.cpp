@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent)
  * Mise en place de l'UI
  */
     lbNbClients = new QLabel("Nombre de clients connectés : <strong>0</strong>",this);
-    address = new QLineEdit("127.0.0.1",this);
     btconnect = new QPushButton("Connexion",this);
     btdisconnect = new QPushButton("Déconnexion",this);
     sendHello = new QPushButton("Envoi d'un fichiers",this);
@@ -34,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(lbNbClients);
-    layout->addWidget(address);
     layout->addWidget(btconnect);
     layout->addWidget(btdisconnect);
     btdisconnect->setEnabled(false);
