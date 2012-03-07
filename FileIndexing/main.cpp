@@ -11,6 +11,8 @@
 
 #include "FileIndexer.h"
 #include "FileUtils.h"
+#include "FolderDao.h"
+
 static void printFileNames(QList<FileModel> list)
 {
     foreach (FileModel file, list) {
@@ -18,14 +20,20 @@ static void printFileNames(QList<FileModel> list)
     }
 }
 
-static void testIndexing(QCoreApplication& a)
+static bool createDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "fileDb");
     db.setDatabaseName("files.sqlite");
     if (!db.open()) {
         qCritical(qPrintable(db.lastError().text()));
-        a.quit();
+        return false;
     }
+    return true;
+}
+
+static void testIndexing(QCoreApplication& a)
+{
+    QSqlDatabase db = QSqlDatabase::database("fileDb");
 
     if (!FileIndexDao::createTable(db, true)) {
         qCritical(qPrintable(db.lastError().text()));
@@ -115,21 +123,47 @@ static void testDataStream()
     QList<SimpleFileModel> newList;
     stream >> newList;
     qDebug() << "list size =" << newList.size();
-//    foreach (SimpleFileModel sfm, newList) {
-//        qDebug() << sfm;
-//    }
+    foreach (SimpleFileModel sfm, newList) {
+        qDebug() << sfm;
+    }
+}
+
+static void testFolderDao()
+{
+    QSqlDatabase db = QSqlDatabase::database("fileDb");
+
+    if (!FolderDao::createTable(db, true)) {
+        qDebug() << db.lastError().number() << db.lastError().text();
+        qCritical(qPrintable(db.lastError().text()));
+        return;
+    }
+
+    FolderModel folder;
+    folder.setPath("C:/");
+
+    FolderDao dao(db);
+    qDebug() << "Insertion";
+    dao.insertFolder(folder);
+    qDebug() << folder;
+
+    QList<FolderModel *> folders = dao.getAllFolders();
+    qDebug() << *(folders.at(0));
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    if (!createDatabase())
+        a.quit();
+
     QTime time;
     time.start();
 
-    testIndexing(a);
+//    testIndexing(a);
 //    testMd5Hash();
-    testDataStream();
+//    testDataStream();
+    testFolderDao();
 
     qDebug("Execution time : %fs", time.elapsed() / 1000.);
 
