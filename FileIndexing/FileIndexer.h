@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QList>
 #include "FileIndexDao.h"
+#include "FolderDao.h"
 
 
 class FileIndexer
@@ -23,7 +24,7 @@ public:
 
     QList<FileModel> searchFiles(QString keyword);
 
-    void setDatabase(QSqlDatabase db) { _dao.setDatabase(db); }
+    void setDatabase(QSqlDatabase db) { _dao.setDatabase(db); _folderDao.setDatabase(db); }
 
     void setNameFilters(const QStringList& nameFilters) { _nameFilters = nameFilters; }
 
@@ -32,6 +33,7 @@ public:
 
 private:
     FileIndexDao _dao;
+    FolderDao _folderDao;
     QList<QDir> _directories;
     QStringList _nameFilters;
     bool _computeHash;

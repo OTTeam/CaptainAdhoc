@@ -11,6 +11,8 @@
 
 #include "FileIndexer.h"
 #include "FileUtils.h"
+#include "FolderDao.h"
+
 static void printFileNames(QList<FileModel> list)
 {
     foreach (FileModel file, list) {
@@ -18,27 +20,39 @@ static void printFileNames(QList<FileModel> list)
     }
 }
 
-static void testIndexing(QCoreApplication& a)
+static bool createDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "fileDb");
     db.setDatabaseName("files.sqlite");
     if (!db.open()) {
         qCritical(qPrintable(db.lastError().text()));
-        a.quit();
+        return false;
     }
 
     if (!FileIndexDao::createTable(db, true)) {
         qCritical(qPrintable(db.lastError().text()));
-        a.quit();
+        return false;
     }
+
+    if (!FolderDao::createTable(db, true)) {
+        qCritical(qPrintable(db.lastError().text()));
+        return false;
+    }
+
+    return true;
+}
+
+static void testIndexing(QCoreApplication& a)
+{
+    QSqlDatabase db = QSqlDatabase::database("fileDb");
 
     QTime time;
     time.start();
 
     FileIndexer indexer(db, true);
-    indexer.addDirectory("C:/temp/test_sqlite/test_filesystem");
-//    indexer.addDirectory("C:/Windows");
-//    indexer.addDirectory("C:/Qt/2009.02/qt/src/sql");
+    indexer.addDirectory("E:/SIMS/git-repo/CaptainAdhoc");
+    indexer.addDirectory("E:/SIMS/git-repo/FileIndexing");
+
 //    QStringList nameFilters;
 //    nameFilters << "*.cpp" << "*.h";
 //    indexer.setNameFilters(nameFilters);
@@ -115,21 +129,42 @@ static void testDataStream()
     QList<SimpleFileModel> newList;
     stream >> newList;
     qDebug() << "list size =" << newList.size();
-//    foreach (SimpleFileModel sfm, newList) {
-//        qDebug() << sfm;
-//    }
+    foreach (SimpleFileModel sfm, newList) {
+        qDebug() << sfm;
+    }
+}
+
+static void testFolderDao()
+{
+    QSqlDatabase db = QSqlDatabase::database("fileDb");
+
+    FolderModel folder;
+    folder.setPath("C:/");
+
+    FolderDao dao(db);
+    qDebug() << "Insertion";
+    dao.insertFolder(folder);
+
+    QList<FolderModel *> folders = dao.getAllFolders();
+    foreach (FolderModel* folder, folders) {
+        qDebug() << *folder;
+    }
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    if (!createDatabase())
+        a.quit();
+
     QTime time;
     time.start();
 
     testIndexing(a);
 //    testMd5Hash();
-    testDataStream();
+//    testDataStream();
+    testFolderDao();
 
     qDebug("Execution time : %fs", time.elapsed() / 1000.);
 
