@@ -153,15 +153,19 @@ void Client::newBytesReceived()
     switch (type)
     {
     case FILE_REQUEST_INIT:
+        qDebug() << "PACKET is FILE_REQUEST_INIT";
         receivedFileRequestInit();
         break;
     case FILE_DATA:
+        qDebug() << "PACKET is FILE_DATA";
         receivedFileData();
         break;
     case FILE_REQUEST_ACK:
+        qDebug() << "PACKET is FILE_REQUEST_ACK";
         receivedFileRequestAck();
         break;
     case LIST_REQUEST:
+        qDebug() << "PACKET is LIST_REQUEST";
         receivedFileList();
         break;
     default:
@@ -206,6 +210,8 @@ void Client::receivedFileRequestInit()
     out << _socket->localAddress().toString(); // l'expéditeur du paquet (nous même)
     out << (quint16) sizeof(type); // taille du data, ici c'est juste type, du coup pas de traitement
     out << type;           // typePaquet
+
+    qDebug() << "SENDING ACK to" << _dest.toString() << "from" <<  _socket->localAddress().toString() << "- packet size :" << (quint16) (paquet.size() - sizeof(quint16));
 
     // mise à jour de taillePaquet
     out.device()->seek(0);
@@ -380,8 +386,10 @@ void Client::newBytesWritten(qint64 bytes)
 
         } else
         {
+            qDebug() << "SENDING complete";
             _fileToSend->close();
             delete _fileToSend;
+            _fileToSend=NULL;
             _bytesSent = 0;
             _timerUlSpeed->stop();
             _etat = IDLE;
