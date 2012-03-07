@@ -16,29 +16,29 @@ TCPServer::TCPServer(QObject *parent) :
 
 bool TCPServer::ServerStarted()
 {
-    return serverStarted;
+    return _serverStarted;
 }
 
 
 bool TCPServer::StartServer()
 {
     // Gestion du serveur
-    serveur = new QTcpServer(this);
-    if (!serveur->listen(QHostAddress::Any, PORT_SERVEUR)) // Démarrage du serveur sur toutes les IP disponibles et sur le port 50585
+    _serveur = new QTcpServer(this);
+    if (!_serveur->listen(QHostAddress::Any, PORT_SERVEUR)) // Démarrage du serveur sur toutes les IP disponibles et sur le port 50585
     {
-        serverStarted = false;
+        _serverStarted = false;
     }
     else
     {
-        serverStarted = true;
-        connect(serveur, SIGNAL(newConnection()), this, SLOT(nouvelleConnexion()));
+        _serverStarted = true;
+        connect(_serveur, SIGNAL(newConnection()), this, SLOT(nouvelleConnexion()));
     }
-    return serverStarted;
+    return _serverStarted;
 }
 
 
 void TCPServer::nouvelleConnexion()
 {
-    QTcpSocket *nouveauClient = serveur->nextPendingConnection();
+    QTcpSocket *nouveauClient = _serveur->nextPendingConnection();
     emit AjouterClient(nouveauClient);
 }

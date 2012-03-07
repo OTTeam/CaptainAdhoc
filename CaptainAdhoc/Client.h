@@ -3,6 +3,7 @@
 
 
 #include <QTcpSocket>
+#include <QHostAddress>
 #include <QString>
 #include <QList>
 #include <QFile>
@@ -18,11 +19,18 @@ class Client : public QObject
 public:
     Client(QTcpSocket *socket);
     Client(QHostAddress address);
+    Client(QTcpSocket *socket, QHostAddress dest, QHostAddress nextHop, quint8 hopNumber);
     ~Client();
-    QHostAddress getAddress();
+    QHostAddress address();
+    quint8 hopNumber();
+    QTcpSocket *socket();
+    void UpdateRoute(QTcpSocket *s,QHostAddress nextHop, quint8 newHopNumber);
+    void connectSocket();
     void sendMessage();
+
+    void ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteArray data);
 private:
-    void socketConfig();
+    void ConfigClient();
 
     void receivedFileRequest();     // demande de fichier de la part du client
     void receivedFileRequestInit(); // réponse du serveur lors de la demande (confirmation nom, taille)
@@ -32,33 +40,48 @@ private:
 
 signals:
     void NewData(int);
-    void NetworkSpeedUpdate(int);
-    void connected(Client *);
-    void disconnected();
+    void BytesSentUpdate(int);
+    void BytesReceivedUpdate(int);
+
+    void DownloadSpeedUpdate(int);
+    void UploadSpeedUpdate(int);
+
+    void Connected();
+    void SocketError();
+    void Disconnected();
+
+public slots:
+    void newBytesReceived();
+    void newBytesWritten(qint64);
 
 private slots:
-
-    void donneesRecues();
-    void donneesEcrites(qint64);
-    void deconnexionSocket();
-    void connexion();
-
     void dlSpeedMeasure();
+    void ulSpeedMeasure();
+
 private:
-    QTcpSocket *socket;
-    quint16 messageLength;
+    QTcpSocket *_socket;
+    quint8 _hopNumber;
 
-    quint64 bytesReceived;
-    quint64 previousBytesReceived;
-    quint64 filesize;
-    QFile *fichierRecv;
+    QHostAddress _dest;
+    QHostAddress _nextHop;
 
-    QFile *fichierSend;
-    quint64 bytesSent;
+    quint16 _messageLength;
 
-    ETAT_CLIENT etat;
+    quint64 _bytesReceived;
+    quint64 _previousBytesReceived;
 
-    QTimer *timerDlSpeed;
+    quint64 _filesize;
+
+    QFile *_fileToReceive;
+    QFile *_fileToSend;
+
+    quint64 _bytesSent;
+    quint64 _previousBytesSent;
+
+    ETAT_CLIENT _etat;
+
+    QTimer *_timerDlSpeed;
+    QTimer *_timerUlSpeed;
 
 };
 

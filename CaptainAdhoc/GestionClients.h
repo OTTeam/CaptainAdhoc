@@ -19,25 +19,46 @@ public:
 
     
 signals:
-    void TransfertUpdate(int);
-    void NetworkSpeedUpdate(int);
+    void ClientUploadUpdate(Client *,int);
+    void ClientDownloadUpdate(Client *,int);
+
+    void ClientUploadSpeedUpdate(Client *,int);
+    void ClientDownloadSpeedUpdate(Client *,int);
+
     void ClientNumberChanged(int);
 
 private slots:
-    void clientReceived(int);
-    void newConnectionRequest(QHostAddress);
-    void newConnectionDone(QTcpSocket *);
-    void clientDisconnect();
-    void clientConnected(Client *);
+    void clientBytesAvailable();
+    void clientBytesWritten(qint64);
 
-    void dlSpeedUpdate(int);
+    void clientReceived(int);
+    void clientSent(int);
+
+    void newConnectionRequest(QHostAddress broadcasterAddress,QList<RoutesTableElt> routes);
+    void newConnectionDone(QTcpSocket *);
+
+    void clientDisconnect();
+    void clientConnectionFailed();
+    void clientConnected();
+    void NewClientConfig(Client *client);
+
+    void uploadSpeedUpdate(int);
+    void downloadSpeedUpdate(int);
+
+    void broadCastTrigger();
+private:
+    Client *findClientByDest(QHostAddress);
+    SocketsHandlers *findSocketHandler(QTcpSocket *);
 
 private:
-    QList<Client*> clients;
-    TCPServer *serveurEcoute;
-    ClientDiscovery *clientDiscoveryModule;
-    QList<LocalFiles> fichiersDisponibles;
-    QList<RemoteFiles> fichiers;
+    QList<Client*> _clients;
+    QList<SocketsHandlers *> _socketsHandlers;
+    TCPServer *_listeningServer;
+    ClientDiscovery *_clientDiscoveryModule;
+    QList<LocalFiles> _localFiles;
+    QList<RemoteFiles> _remoteFiles;
+
+    QTimer *_timerBroadcast;
 };
 
 

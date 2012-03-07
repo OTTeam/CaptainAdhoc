@@ -7,55 +7,114 @@
 #include <QFileDialog>
 #include <QTime>
 
+
+/*
+ * Constructeur appelé lorsque les serveur TCP a reçu
+ * une nouvelle demande de connexion client
+ */
 Client::Client(QTcpSocket *s)
 {
-    socket = s;
-    socketConfig();}
+    _socket = s;
+    // dans ce cas là, comme la connexion a été demandée par le socket
+    // on sait que c'est à 1 hop
+    _dest = socket()->peerAddress();
+    _nextHop = socket()->peerAddress();
+    _hopNumber = 1;
+
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+//    qDebug() << "Client(QTCpSocket *)";
+//    qDebug() << "nextHop" << _nextHop << "  dest" << _dest;
 
 
-Client::Client(QHostAddress address)
+    ConfigClient();
+    emit Connected();
+}
+
+/*
+ * Constructeur appelé lors de l'ajout d'un client
+ */
+Client::Client(QTcpSocket *s, QHostAddress dest, QHostAddress nextHop, quint8 hopNumber)
 {
-    socket = new QTcpSocket(this);
-    socketConfig();
-    socket->connectToHost(address,PORT_SERVEUR);
+    _socket = s;
+    _dest = dest;
+    _nextHop = nextHop;
+    _hopNumber = hopNumber;
+
+   qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+
+    ConfigClient();
 }
 
 
-void Client::socketConfig()
+/*
+ * Constructeur appelé lors de l'ajout d'un client par son adresse.
+ */
+Client::Client(QHostAddress address)
 {
-    connect(socket, SIGNAL(connected()),         this, SLOT(connexion()));
-    connect(socket, SIGNAL(readyRead()),         this, SLOT(donneesRecues()));
-    connect(socket, SIGNAL(disconnected()),      this, SLOT(deconnexionSocket()));
-    connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(donneesEcrites(qint64)));
-    messageLength = 0;
-    etat = IDLE;
+    _socket = new QTcpSocket(this);
+    ConfigClient();
+    _nextHop = address;
+    _dest = address;
 
 
-    bytesReceived = 0;
-    previousBytesReceived = 0;
-    bytesSent = 0;
-    timerDlSpeed = new QTimer(this);
-    connect(timerDlSpeed,SIGNAL(timeout()),this,SLOT(dlSpeedMeasure()));
-    timerDlSpeed->setInterval(500);
-    timerDlSpeed->start();
-    timerDlSpeed->setSingleShot(false);
+    qDebug() << "New client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+
+
+    _hopNumber = 1;
+    //_socket->connectToHost(address,PORT_SERVEUR);
+}
+
+
+void Client::ConfigClient()
+{
+    connect(_socket, SIGNAL(connected()),         this, SIGNAL(Connected()));
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),         this, SIGNAL(SocketError()));
+    connect(_socket, SIGNAL(disconnected()),      this, SIGNAL(Disconnected()));
+    //connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),this,SIGNAL(Disconnected()));
+    _messageLength = 0;
+    _etat = IDLE;
+
+
+    _bytesReceived = 0;
+    _previousBytesReceived = 0;
+    _bytesSent = 0;
+
+    _timerDlSpeed = new QTimer(this);
+    connect(_timerDlSpeed,SIGNAL(timeout()),this,SLOT(dlSpeedMeasure()));
+    _timerDlSpeed->setInterval(500);
+    //timerDlSpeed->start();
+    _timerDlSpeed->setSingleShot(false);
+
+    _timerUlSpeed = new QTimer(this);
+    connect(_timerUlSpeed,SIGNAL(timeout()),this,SLOT(ulSpeedMeasure()));
+    _timerUlSpeed->setInterval(500);
+    //timerUlSpeed->start();
+    _timerUlSpeed->setSingleShot(false);
+
+
+    _fileToSend = NULL;
+    _fileToReceive = NULL;
 }
 
 
 Client::~Client()
 {
-    if (fichierRecv != NULL && fichierRecv->isOpen())
+    if (_fileToReceive != NULL && _fileToReceive->isOpen())
     {
-        fichierRecv->close();
-        delete fichierRecv;
+        _fileToReceive->close();
+        delete _fileToReceive;
     }
-    if (fichierSend!= NULL && fichierSend->isOpen())
+    if (_fileToSend!= NULL && _fileToSend->isOpen())
     {
-        fichierSend->close();
-        delete fichierSend;
+        _fileToSend->close();
+        delete _fileToSend;
     }
 
-    delete socket;
+    qDebug() << "Deleted client - Dest :" << _dest.toString() << "- nextHop :" << _nextHop.toString();
+
+    // on détruit le socket seulement si on est le next hop (pas si c'est une passerelle)
+    if (_dest == _nextHop)
+        delete _socket;
 }
 
 /*
@@ -69,54 +128,52 @@ Client::~Client()
  * LIST_REQUEST      : anuaire de fichiers disponibles : sous la forme nomFic1, taille1, nomFic2, Taille2....
  *
 */
-void Client::donneesRecues()
+void Client::newBytesReceived()
 {
     // Si tout va bien, on continue : on récupère le message
-    QDataStream in(socket);
+    QDataStream in(_socket);
 
 
-    while (socket->bytesAvailable()>0)
+    if (_messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
     {
-        if (messageLength == 0) // Si on ne connaît pas encore la taille du message, on essaie de la récupérer
-        {
-            if (socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
-                return;
-
-            in >> messageLength; // Si on a reçu la taille du message en entier, on la récupère
-
-        }
-
-        // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
-        if (socket->bytesAvailable() < messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        if (_socket->bytesAvailable() < (int)sizeof(quint16)) // On n'a pas reçu la taille du message en entier
             return;
 
-        // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
-        quint16 type;
-        in >> type;
-        switch (type)
-        {
-        case FILE_REQUEST_INIT:
-            receivedFileRequestInit();
-            break;
-        case FILE_DATA:
-            receivedFileData();
-            break;
-        case FILE_REQUEST_ACK:
-            receivedFileRequestAck();
-            break;
-        case LIST_REQUEST:
-            receivedFileList();
-            break;
-        default:
-            break;
-        }
+         in >> _messageLength; // Si on a reçu la taille du message en entier, on la récupère
 
-        messageLength = 0;
     }
 
+    // Si on connaît la taille du message, on vérifie si on a reçu le message en entier
+    if (_socket->bytesAvailable() < _messageLength) // Si on n'a pas encore tout reçu, on arrête la méthode
+        return;
+
+    // Si ces lignes s'exécutent, c'est qu'on a reçu tout le message : on peut le récupérer !
+    quint16 type;
+    in >> type;
+    switch (type)
+    {
+    case FILE_REQUEST_INIT:
+        qDebug() << "PACKET is FILE_REQUEST_INIT";
+        receivedFileRequestInit();
+        break;
+    case FILE_DATA:
+        qDebug() << "PACKET is FILE_DATA";
+        receivedFileData();
+        break;
+    case FILE_REQUEST_ACK:
+        qDebug() << "PACKET is FILE_REQUEST_ACK";
+        receivedFileRequestAck();
+        break;
+    case LIST_REQUEST:
+        qDebug() << "PACKET is LIST_REQUEST";
+        receivedFileList();
+        break;
+    default:
+        break;
+    }
+
+    _messageLength = 0;
 }
-
-
 
 void Client::receivedFileRequest()
 {
@@ -126,22 +183,20 @@ void Client::receivedFileRequest()
 
 void Client::receivedFileRequestInit()
 {
-    QDataStream in(socket);
+    QDataStream in(_socket);
     // ici on a juste envoyé le filename, on le récupère donc
     QString fileRequested;
 
     in >> fileRequested;
-    in >> filesize;
+    in >> _filesize;
 
     QString path = QFileDialog::getExistingDirectory(0,"Enregistrer le fichier sous...");
     path += "\\" + fileRequested;
 
-    QMessageBox::information(0,"receiving", path);
+    _fileToReceive = new QFile(path);
+    _fileToReceive->open(QIODevice::WriteOnly | QIODevice::Truncate);
 
-    fichierRecv = new QFile(path);
-    fichierRecv->open(QIODevice::WriteOnly | QIODevice::Truncate);
-
-    bytesReceived = 0;
+    _bytesReceived = 0;
 
 
     // on envoie alors le Ack pour confirmer au serveur l'envoi du fichier
@@ -150,40 +205,46 @@ void Client::receivedFileRequestInit()
 
     // On prépare le paquet à envoyer
     quint16 type = FILE_REQUEST_ACK;
-    out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
+    out << (quint16) 0;    // taillePaquet globale que l'on changera après écriture du paquet
+    out << _dest.toString();    //la destination du paquet
+    out << _socket->localAddress().toString(); // l'expéditeur du paquet (nous même)
+    out << (quint16) sizeof(type); // taille du data, ici c'est juste type, du coup pas de traitement
     out << type;           // typePaquet
+
+    qDebug() << "SENDING ACK to" << _dest.toString() << "from" <<  _socket->localAddress().toString() << "- packet size :" << (quint16) (paquet.size() - sizeof(quint16));
 
     // mise à jour de taillePaquet
     out.device()->seek(0);
     out << (quint16) (paquet.size() - sizeof(quint16));
 
-    socket->write(paquet); // On envoie le paquet
-    timerDlSpeed->start();
+    _socket->write(paquet); // On envoie le paquet
+    _timerDlSpeed->start();
 }
 
 
 void Client::receivedFileRequestAck()
 {
-    etat = SENDING_FILE;
-    donneesEcrites(0);
+    _etat = SENDING_FILE;
+    _timerUlSpeed->start();
+    newBytesWritten(0);
 }
 
 
 void Client::receivedFileData()
 {
-    QDataStream in(socket);
+    QDataStream in(_socket);
     QByteArray data;
     in >> data;
-    bytesReceived += data.length();
-    fichierRecv->write(data);
-    emit NewData(bytesReceived*100/filesize);
+    _bytesReceived += data.length();
+    _fileToReceive->write(data);
+    emit BytesReceivedUpdate(_bytesReceived*100/_filesize);
 
-    if (bytesReceived == filesize)
+    if (_bytesReceived == _filesize)
     {
-        bytesReceived = 0;
-        fichierRecv->close();
-        delete fichierRecv;
-        timerDlSpeed->stop();
+        _bytesReceived = 0;
+        _fileToReceive->close();
+        delete _fileToReceive;
+        _timerDlSpeed->stop();
     }
 }
 
@@ -210,101 +271,175 @@ void Client::sendMessage()
     QString filePath = QFileDialog::getOpenFileName(0,"Sélectionnez le fichier à envoyer");
 
     // ouverture du fichier
-    fichierSend = new QFile(filePath);
-    fichierSend->open(QIODevice::ReadOnly);
+    _fileToSend = new QFile(filePath);
+    _fileToSend->open(QIODevice::ReadOnly);
+
     // changement d'état pour pouvoir envoyer la suite lors de l'appel au slot "donneesEcrites"
-    etat = WAITING_ACK;
-    bytesSent=0;
+    _etat = WAITING_ACK;
+    _bytesSent=0;
+
+
 
     QFileInfo fileInfo(filePath);
     QString SendFilename = fileInfo.fileName();
     quint64 SendFilesize = fileInfo.size();
+    quint64 posData;
+    quint16 headerSize;
+
+    out << (quint16) 0;
+    out << _dest.toString();
+    out << _socket->localAddress().toString();
+
+//    qDebug() << _dest.toString();
+//    qDebug() << _socket->localAddress().toString();
+    posData = paquet.size();
     out << (quint16) 0;    // taillePaquet que l'on changera après écriture du paquet
+    headerSize = paquet.size();
+
+//    qDebug() << "posData :"  << posData << "  headerSize" << headerSize;
     out << type;           // typePaquet
     out << SendFilename;   // NomFichier
     out << SendFilesize;   //TailleFichier
 
+    qDebug() << "SENDING InitFileRequest to" << _dest.toString() << " - packet size" << (quint16) (paquet.size() - sizeof(quint16));
 
-    // mise à jour de taillePaquet
+
+    // mise à jour de taillePaquet globale
     out.device()->seek(0);
     out << (quint16) (paquet.size() - sizeof(quint16));
 
 
-    QMessageBox::information(0,"sending", SendFilename);
-    socket->write(paquet); // On envoie le paquet
+    // puis de la taille du paquet data (sans le header
+    out.device()->seek(posData);
+    out << (quint16) (paquet.size() - headerSize);
 
+    QMessageBox::information(0,"sending", SendFilename);
+    _socket->write(paquet); // On envoie le paquet
 }
+
+void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteArray data)
+{
+    // On commence par lire le paquet, sans l'interpréter.
+    // On renvoie alors le paquet complet à notre next-hop
+//    QDataStream in(_socket);
+    quint16 dataSize = data.size();
+
+//    QByteArray data;
+//    in >> dataSize;
+//    data.resize(dataSize);
+//    in.readRawData(data.data(),dataSize);
+
+
+    QByteArray paquetData;
+    QDataStream out(&paquetData,QIODevice::WriteOnly );
+
+    out << (quint16) 0;
+    out << destAdd.toString();
+    out << senderAdd.toString();
+    out << dataSize;
+    out << data;
+
+    out.device()->seek(0);
+    out << (quint16) (paquetData.size() - sizeof(quint16));
+
+    qDebug() << "FORWARDING to" << destAdd.toString() << " - packet size :" << (quint16) (paquetData.size() - sizeof(quint16));
+
+    _socket->write(paquetData); // On envoie le paquet
+}
+
 
 /*
  * Slot appelé à chaque écriture de données sur la socket, permet de ne pas être bloquant sur le socket->write()
  * si le buffer est plein.
  */
-void Client::donneesEcrites(qint64 bytes)
+void Client::newBytesWritten(qint64 bytes)
 {
-    if (etat == SENDING_FILE)
+    Q_UNUSED(bytes)
+
+    if (_etat == SENDING_FILE)
     {
-        QFileInfo fileInfo(fichierSend->fileName());
+        QFileInfo fileInfo(_fileToSend->fileName());
 
         int filesize = fileInfo.size();
         quint16 type = FILE_DATA;
         QByteArray paquet;
         QDataStream out(&paquet, QIODevice::WriteOnly);
 
-        QByteArray data = fichierSend->read(BLOCK_SIZE);
-        bytesSent += data.size();
-        emit NewData(bytesSent*100/filesize);
+        QByteArray data = _fileToSend->read(BLOCK_SIZE);
+        _bytesSent += data.size();
+        emit BytesSentUpdate(_bytesSent*100/filesize);
         if (data.length() > 0)
         {
             out << (quint16) 0;
+            out << _dest.toString();
+            out << _socket->localAddress().toString();
+            out << (quint16) (sizeof(type) + data.size());
             out << type;
             out << data;
 
             out.device()->seek(0);
             out << (quint16) (paquet.size() - sizeof(quint16));
 
-            socket->write(paquet);
+            qDebug() << "SENDING to" << _dest.toString() << "- packet size :" << (quint16) (paquet.size() - sizeof(quint16));
+
+            _socket->write(paquet);
 
         } else
         {
-            fichierSend->close();
-            delete fichierSend;
-            bytesSent = 0;
-            etat = IDLE;
+            qDebug() << "SENDING complete";
+            _fileToSend->close();
+            delete _fileToSend;
+            _fileToSend=NULL;
+            _bytesSent = 0;
+            _timerUlSpeed->stop();
+            _etat = IDLE;
         }
     }
 }
 
 
-void Client::deconnexionSocket()
+QHostAddress Client::address()
 {
-    emit disconnected();
+    return _dest;
 }
 
-
-void Client::connexion()
+quint8 Client::hopNumber()
 {
-    emit connected(this);
+    return _hopNumber;
 }
 
-
-QHostAddress Client::getAddress()
+QTcpSocket *Client::socket()
 {
-    return socket->peerAddress();
+    return _socket;
 }
 
+void Client::UpdateRoute(QTcpSocket *s,QHostAddress nextHop, quint8 newHopNumber)
+{
+    // on déconnecte le socket de ce client
+    disconnect(_socket,0,this,0);
+    _socket = s;
+    connect(_socket,SIGNAL(disconnected()),this,SIGNAL(Disconnected()));
+    _nextHop = nextHop;
+    _hopNumber = newHopNumber;
+}
+
+void Client::connectSocket()
+{
+    _socket->connectToHost(_nextHop,PORT_SERVEUR);
+}
 
 void Client::dlSpeedMeasure()
 {
-    quint64 bytesDiff = (bytesReceived-previousBytesReceived)*2;
-    previousBytesReceived = bytesReceived;
-    QString text;
-    if (bytesDiff > 10000)
-    {
-        text = QString::number(bytesDiff/1000) + "Kb/s";
-    }
-    else
-    {
-        text = QString::number(bytesDiff) + "b/s";
-    }
-    emit NetworkSpeedUpdate(bytesDiff);
+    quint64 bytesDiff = (_bytesReceived-_previousBytesReceived)*2;
+    _previousBytesReceived = _bytesReceived;
+
+    emit DownloadSpeedUpdate(bytesDiff);
+}
+
+void Client::ulSpeedMeasure()
+{
+    quint64 bytesDiff = (_bytesSent-_previousBytesSent)*2;
+    _previousBytesSent = _bytesSent;
+
+    emit UploadSpeedUpdate(bytesDiff);
 }
