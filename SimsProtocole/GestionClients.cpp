@@ -285,6 +285,8 @@ void GestionClients::clientBytesAvailable()
         destAdd = destAddStr;
         senderAdd = senderAddStr;
 
+        qDebug() << "RECEIVED packet size" << socketHandler->paquetSize << "from" << senderAddStr << "to" << destAddStr;
+
         //        qDebug() << destAddStr;
 
         //        qDebug() << senderAddStr;

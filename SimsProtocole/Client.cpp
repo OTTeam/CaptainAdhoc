@@ -295,6 +295,8 @@ void Client::sendMessage()
     out << SendFilename;   // NomFichier
     out << SendFilesize;   //TailleFichier
 
+    qDebug() << "SENDING InitFileRequest to" << _dest.toString() << " - packet size" << (quint16) (paquet.size() - sizeof(quint16));
+
 
     // mise à jour de taillePaquet globale
     out.device()->seek(0);
@@ -326,13 +328,15 @@ void Client::ForwardMessage(QHostAddress senderAdd,QHostAddress destAdd, QByteAr
     QDataStream out(&paquetData,QIODevice::WriteOnly );
 
     out << (quint16) 0;
-    out << senderAdd.toString();
     out << destAdd.toString();
+    out << senderAdd.toString();
     out << dataSize;
     out << data;
 
     out.device()->seek(0);
     out << (quint16) (paquetData.size() - sizeof(quint16));
+
+    qDebug() << "FORWARDING to" << destAdd.toString() << " - packet size :" << (quint16) (paquetData.size() - sizeof(quint16));
 
     _socket->write(paquetData); // On envoie le paquet
 }
@@ -369,6 +373,8 @@ void Client::newBytesWritten(qint64 bytes)
 
             out.device()->seek(0);
             out << (quint16) (paquet.size() - sizeof(quint16));
+
+            qDebug() << "SENDING to" << _dest.toString() << "- packet size :" << (quint16) (paquet.size() - sizeof(quint16));
 
             _socket->write(paquet);
 
