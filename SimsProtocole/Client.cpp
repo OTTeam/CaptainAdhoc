@@ -401,7 +401,10 @@ QTcpSocket *Client::socket()
 
 void Client::UpdateRoute(QTcpSocket *s,QHostAddress nextHop, quint8 newHopNumber)
 {
+    // on déconnecte le socket de ce client
+    disconnect(_socket,0,this,0);
     _socket = s;
+    connect(_socket,SIGNAL(disconnected()),this,SIGNAL(Disconnected()));
     _nextHop = nextHop;
     _hopNumber = newHopNumber;
 }
